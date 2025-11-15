@@ -2,8 +2,7 @@
 import {
   STATES,
   CONTRACTORS,
-  getStateSlug,
-  getCitySlug,
+  getSlug,
   getContractorsByCity,
 } from '@/composables/useContractors'
 
@@ -15,7 +14,7 @@ const route = useRoute()
 const stateSlug = route.params.state as string
 const citySlug = route.params.city as string
 
-const state = STATES.find((s) => getStateSlug(s) === stateSlug)
+const state = STATES.find((s) => getSlug(s) === stateSlug)
 
 if (!state) {
   throw createError({
@@ -25,7 +24,7 @@ if (!state) {
 }
 
 const allContractorsInState = CONTRACTORS.filter((c) => c.state === state)
-const cityContractor = allContractorsInState.find((c) => getCitySlug(c.city) === citySlug)
+const cityContractor = allContractorsInState.find((c) => getSlug(c.city) === citySlug)
 
 if (!cityContractor) {
   throw createError({

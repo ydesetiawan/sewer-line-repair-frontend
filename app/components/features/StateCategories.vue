@@ -35,7 +35,7 @@ const getStateRoute = (state: any) => {
       <div class="text-center mb-12">
         <h2 class="text-3xl font-bold mb-4">Browse by State</h2>
         <p class="text-lg text-muted-foreground">
-          Find sewer repair contractors in your state
+          Select your state to find certified sewer repair contractors in your area
         </p>
       </div>
 
@@ -73,10 +73,10 @@ const getStateRoute = (state: any) => {
               <MapPin class="w-5 h-5 text-accent" />
               <div class="flex-1 min-w-0">
                 <span class="font-medium group-hover:text-accent transition-colors block truncate">
-                  {{ state.attributes.name }}
+                  {{ state.attributes.name }} • {{ state.attributes.country.name }}
                 </span>
                 <span class="text-xs text-muted-foreground">
-                  {{ state.attributes.code }}
+                  {{ state.attributes.companies_count }} contractors available
                 </span>
               </div>
             </div>

@@ -55,10 +55,22 @@ const getStateRoute = (state: any) => {
 
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-4xl font-bold mb-4">Browse All States</h1>
-      <p class="text-xl text-muted-foreground">
-        Select a state to find certified sewer repair contractors
+      <h1 class="text-4xl font-bold mb-4">All States</h1>
+      <p class="text-medium text-muted-foreground">
+        Browse sewer line repair contractors across all available states. Select your state to view certified professionals in your area.
       </p>
+    </div>
+
+    <div>
+      <FeaturesSearchState />
+    </div>
+
+    <!-- Top Pagination Info Bar -->
+    <div v-if="pagination" class="mb-8 mt-3">
+        <p class="text-xs text-muted-foreground">
+          Found <span class="text-accent font-bold">{{ states.length }}</span> of
+          <span class="text-accent font-bold">{{ pagination.total_items }}</span> states
+        </p>
     </div>
 
     <!-- Loading State -->
@@ -116,9 +128,11 @@ const getStateRoute = (state: any) => {
                 <MapPin class="w-5 h-5 text-accent" />
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="font-semibold text-lg truncate">{{ state.attributes.name }}</h3>
+                <h3 class="font-medium group-hover:text-accent transition-colors block truncate">
+                  {{ state.attributes.name }}  • {{ state.attributes.country.name }}
+                </h3>
                 <p class="text-sm text-muted-foreground">
-                  {{ state.attributes.code }} • {{ state.attributes.country.name }}
+                  <span class="text-accent">{{ state.attributes.companies_count }}</span> contractors available
                 </p>
               </div>
             </div>
