@@ -84,40 +84,40 @@ const getStateRoute = (state: any) => {
         </div>
 
         <!-- Pagination Info -->
-        <div v-if="pagination" class="flex justify-center items-center gap-4 text-sm text-muted-foreground">
-          <span>
-            Page {{ pagination.current_page }} of {{ pagination.total_pages }}
-            ({{ pagination.total_items }} states total)
-          </span>
-        </div>
+<!--        <div v-if="pagination" class="flex justify-center items-center gap-4 text-sm text-muted-foreground">-->
+<!--          <span>-->
+<!--            Page {{ pagination.current_page }} of {{ pagination.total_pages }}-->
+<!--            ({{ pagination.total_items }} states total)-->
+<!--          </span>-->
+<!--        </div>-->
 
         <!-- Pagination Controls -->
-        <div class="flex justify-center items-center gap-4">
-          <UiButton
-            v-if="hasPrevPage"
-            @click="loadPrevious"
-            variant="outline"
-            :disabled="loading"
-            class="gap-2"
-          >
-            <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />
-            <span v-else>← Previous</span>
-          </UiButton>
+<!--        <div class="flex justify-center items-center gap-4">-->
+<!--          <UiButton-->
+<!--            v-if="hasPrevPage"-->
+<!--            @click="loadPrevious"-->
+<!--            variant="outline"-->
+<!--            :disabled="loading"-->
+<!--            class="gap-2"-->
+<!--          >-->
+<!--            <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />-->
+<!--            <span v-else>← Previous</span>-->
+<!--          </UiButton>-->
 
-          <UiButton
-            v-if="hasNextPage"
-            @click="loadMore"
-            variant="outline"
-            :disabled="loading"
-            class="gap-2"
-          >
-            <template v-if="loading">
-              <Loader2 class="w-4 h-4 animate-spin" />
-              Loading...
-            </template>
-            <span v-else>Next →</span>
-          </UiButton>
-        </div>
+<!--          <UiButton-->
+<!--            v-if="hasNextPage"-->
+<!--            @click="loadMore"-->
+<!--            variant="outline"-->
+<!--            :disabled="loading"-->
+<!--            class="gap-2"-->
+<!--          >-->
+<!--            <template v-if="loading">-->
+<!--              <Loader2 class="w-4 h-4 animate-spin" />-->
+<!--              Loading...-->
+<!--            </template>-->
+<!--            <span v-else>Next →</span>-->
+<!--          </UiButton>-->
+<!--        </div>-->
 
         <!-- View All Link -->
         <div class="text-center mt-8">

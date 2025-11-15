@@ -14,7 +14,7 @@ useSeoMeta({
 // Fetch all states from API with pagination
 const { states, pagination, loading, error, fetchStates, refresh, hasNextPage, hasPrevPage } = useStates({
   page: 1,
-  perPage: 50, // Show more states on the full browse page
+  perPage: 20, // Show more states on the full browse page
   autoFetch: true,
 })
 
@@ -73,15 +73,19 @@ const getStateRoute = (state: any) => {
 
     <!-- States Grid -->
     <div v-else-if="states.length > 0" class="space-y-8">
-      <!-- Pagination Info -->
-      <div v-if="pagination" class="flex justify-between items-center">
-        <p class="text-sm text-muted-foreground">
-          Showing {{ states.length }} of {{ pagination.total_items }} states
-        </p>
-        <p class="text-sm text-muted-foreground">
-          Page {{ pagination.current_page }} of {{ pagination.total_pages }}
-        </p>
-      </div>
+<!--      &lt;!&ndash; Top Pagination Info Bar &ndash;&gt;-->
+<!--      <div v-if="pagination" class="bg-secondary/20 rounded-lg p-4">-->
+<!--        <div class="flex flex-col sm:flex-row justify-between items-center gap-2">-->
+<!--          <p class="text-sm font-medium text-foreground">-->
+<!--            Showing <span class="text-accent font-bold">{{ states.length }}</span> of-->
+<!--            <span class="text-accent font-bold">{{ pagination.total_items }}</span> states-->
+<!--          </p>-->
+<!--          <p class="text-sm font-medium text-foreground">-->
+<!--            Page <span class="text-accent font-bold">{{ pagination.current_page }}</span> of-->
+<!--            <span class="text-accent font-bold">{{ pagination.total_pages }}</span>-->
+<!--          </p>-->
+<!--        </div>-->
+<!--      </div>-->
 
       <!-- States Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -108,38 +112,46 @@ const getStateRoute = (state: any) => {
         </NuxtLink>
       </div>
 
-      <!-- Pagination Controls -->
-      <div v-if="pagination && (hasNextPage || hasPrevPage)" class="flex justify-center items-center gap-4 pt-4">
-        <UiButton
-          v-if="hasPrevPage"
-          @click="loadPrevious"
-          variant="outline"
-          size="lg"
-          :disabled="loading"
-          class="gap-2"
-        >
-          <Loader2 v-if="loading" class="w-5 h-5 animate-spin" />
-          <span v-else>← Previous</span>
-        </UiButton>
+      <!-- Pagination Controls - Always show when we have data -->
+      <div v-if="pagination" class="space-y-4">
+        <!-- Pagination Buttons -->
+        <div v-if="hasNextPage || hasPrevPage" class="flex justify-center items-center gap-4">
+          <UiButton
+            v-if="hasPrevPage"
+            @click="loadPrevious"
+            variant="outline"
+            size="lg"
+            :disabled="loading"
+            class="gap-2"
+          >
+            <Loader2 v-if="loading" class="w-5 h-5 animate-spin" />
+            <span v-else>← Previous</span>
+          </UiButton>
 
-        <div class="text-sm text-muted-foreground hidden sm:block">
-          Page {{ pagination.current_page }} of {{ pagination.total_pages }}
+          <div class="text-sm text-muted-foreground font-medium">
+            Page {{ pagination.current_page }} of {{ pagination.total_pages }}
+          </div>
+
+          <UiButton
+            v-if="hasNextPage"
+            @click="loadMore"
+            variant="outline"
+            size="lg"
+            :disabled="loading"
+            class="gap-2"
+          >
+            <template v-if="loading">
+              <Loader2 class="w-5 h-5 animate-spin" />
+              Loading...
+            </template>
+            <span v-else>Next →</span>
+          </UiButton>
         </div>
 
-        <UiButton
-          v-if="hasNextPage"
-          @click="loadMore"
-          variant="outline"
-          size="lg"
-          :disabled="loading"
-          class="gap-2"
-        >
-          <template v-if="loading">
-            <Loader2 class="w-5 h-5 animate-spin" />
-            Loading...
-          </template>
-          <span v-else>Next →</span>
-        </UiButton>
+        <!-- Show page info even on single page -->
+        <div v-else class="text-center text-sm text-muted-foreground">
+          Showing all {{ pagination.total_items }} state{{ pagination.total_items !== 1 ? 's' : '' }}
+        </div>
       </div>
 
       <!-- Loading indicator during pagination -->
