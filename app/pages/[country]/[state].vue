@@ -3,10 +3,9 @@ import { MapPin } from 'lucide-vue-next'
 import {
   STATES,
   CONTRACTORS,
-  getStateSlug,
+  getSlug,
   getCitiesByState,
   getContractorsByState,
-  getCitySlug,
 } from '@/composables/useContractors'
 
 definePageMeta({
@@ -15,13 +14,21 @@ definePageMeta({
 
 const route = useRoute()
 const stateSlug = route.params.state as string
+const countrySlug = route.params.country as string
 
-const state = STATES.find((s) => getStateSlug(s) === stateSlug)
+const state = STATES.find((s) => getSlug(s) === stateSlug)
+const country = countrySlug.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) // "United States"
 
 if (!state) {
   throw createError({
     statusCode: 404,
     statusMessage: 'State not found',
+  })
+}
+if (!country) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Country not found',
   })
 }
 
@@ -40,7 +47,7 @@ useSeoMeta({
       <ol class="flex items-center gap-2">
         <li><NuxtLink to="/" class="hover:text-foreground">Home</NuxtLink></li>
         <li>/</li>
-        <li><NuxtLink to="/browse-all-states" class="hover:text-foreground">States</NuxtLink></li>
+        <li><NuxtLink :to="`/browse-all-states?country=${countrySlug}`" class="hover:text-foreground">{{ country }}</NuxtLink></li>
         <li>/</li>
         <li class="text-foreground font-medium">{{ state }}</li>
       </ol>
@@ -61,7 +68,7 @@ useSeoMeta({
         <NuxtLink
           v-for="city in cities"
           :key="city"
-          :to="`/sewer-line-repair/${stateSlug}/${getCitySlug(city)}`"
+          :to="`/${countrySlug}/${stateSlug}/${getSlug(city)}`"
           class="p-4 border border-border rounded-lg hover:border-accent hover:bg-card/50 transition-all"
         >
           <div class="flex items-center gap-2">
