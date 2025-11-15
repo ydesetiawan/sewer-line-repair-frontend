@@ -589,6 +589,12 @@ export const CONTRACTORS: Contractor[] = [
 
 export const STATES = ["California", "New York", "Texas", "Florida", "Illinois", "Pennsylvania", "Arizona", "Georgia"]
 
+export function getSlug(type: string): string | null {
+    if (type === null) return null
+
+    return type.toLowerCase().replace(/\s+/g, "-")
+}
+
 export function getStateSlug(state: string): string {
   return state.toLowerCase().replace(/\s+/g, "-")
 }

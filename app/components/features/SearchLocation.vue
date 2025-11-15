@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { Search, Loader2, MapPin } from 'lucide-vue-next'
 import { useLocationAutocomplete } from '@/composables/useLocationAutocomplete'
-import { getStateSlug, getCitySlug } from '@/composables/useContractors'
+import { getSlug } from '@/composables/useContractors'
 
 const searchInput = ref('')
 const router = useRouter()
@@ -34,15 +34,20 @@ const handleSearchSubmit = (location?: any) => {
   const { country, state, city, address } = targetLocation.attributes
 
   // Build the route based on available data
-  const stateSlug = getStateSlug(state)
-  const citySlug = getCitySlug(city)
+  const countrySlug = getSlug(country)
+  const stateSlug = getSlug(state)
+  const citySlug = getSlug(city)
 
+  let url = ''
   // Navigate to the appropriate route
   if (city && state) {
-    router.push(`/sewer-line-repair/${stateSlug}/${citySlug}`)
-  } else if (state) {
-    router.push(`/sewer-line-repair/${stateSlug}`)
+    url = `/${countrySlug}/${stateSlug}/${citySlug}`
+  } else if (state && !city) {
+    url = `/${countrySlug}/${stateSlug}`
+  } else {
+    url = `/${countrySlug}`
   }
+  router.push(`${url}`)
 
   // Clear results and input
   clearResults()
@@ -57,11 +62,25 @@ const handleKeyDown = (e: KeyboardEvent) => {
 
 // Format location display text
 const formatLocation = (location: any) => {
-  const { city, state, address } = location.attributes
+  const { country, city, state, address } = location.attributes
   if (address) {
     return `${address}, ${city}, ${state}`
   }
-  return `${city}, ${state}`
+  if (city) {
+    return `${city}, ${state}`
+  }
+  if (state) {
+    return `${state}`
+  }
+  return `${country}`
+}
+
+const formatDetailLocation = (location: any) => {
+  const { country, state } = location.attributes
+  if (state) {
+    return `${state}, ${country}`
+  }
+  return ``
 }
 </script>
 
@@ -71,7 +90,7 @@ const formatLocation = (location: any) => {
       <div class="relative flex-1">
         <UiInput
           v-model="searchInput"
-          placeholder="Search by city, state, or address..."
+          placeholder="Search by country, city, state, or address..."
           class="bg-card border-border pl-10 pr-10 text-foreground"
           @input="handleSearch(searchInput)"
           @keydown="handleKeyDown"
@@ -120,7 +139,7 @@ const formatLocation = (location: any) => {
               <div class="flex-1 min-w-0">
                 <div class="font-medium truncate">{{ formatLocation(location) }}</div>
                 <div class="text-xs text-muted-foreground">
-                  {{ location.attributes.state }}, {{ location.attributes.country }}
+                  {{ formatDetailLocation(location) }}
                 </div>
               </div>
             </div>

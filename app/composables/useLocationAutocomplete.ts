@@ -30,7 +30,7 @@ export const useLocationAutocomplete = (
   const meta = ref<{ query: string; count: number; limit: number } | null>(null)
 
   const config = useRuntimeConfig()
-  const apiBaseUrl = (config.public.apiBaseUrl as string) || 'http://localhost:3000'
+  const apiBaseUrl = config.public.apiBaseUrl as string
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
