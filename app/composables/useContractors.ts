@@ -625,3 +625,7 @@ export function getCitiesByState(state: string): string[] {
 export function getContractorById(id: string): Contractor | undefined {
   return CONTRACTORS.find((c) => c.id === id)
 }
+
+export function getCountry(countrySlug: string): string | null {
+    return countrySlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+}

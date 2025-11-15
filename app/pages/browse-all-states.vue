@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { MapPin, Loader2, AlertCircle, RefreshCw } from 'lucide-vue-next'
 import { useStates } from '@/composables/useStatesApi'
+import { getCountry} from "@/composables/useContractors";
 
 definePageMeta({
   layout: 'default',
@@ -44,6 +45,14 @@ const getStateRoute = (state: any) => {
 
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <nav class="mb-8 text-sm text-muted-foreground">
+      <ol class="flex items-center gap-2">
+        <li><NuxtLink to="/" class="hover:text-foreground">Home</NuxtLink></li>
+        <li v-if="countrySlug">/</li>
+        <li v-if="countrySlug"><NuxtLink :to="`/browse-all-states?country=${countrySlug}`" class="hover:text-foreground">{{ getCountry(countrySlug) }}</NuxtLink></li>
+      </ol>
+    </nav>
+
     <!-- Header -->
     <div class="mb-8">
       <h1 class="text-4xl font-bold mb-4">Browse All States</h1>
