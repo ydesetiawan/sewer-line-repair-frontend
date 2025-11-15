@@ -160,12 +160,6 @@ export const useStatesSearch = (options: UseStatesSearchOptions = {}): UseStates
    */
   const totalResults = computed(() => pagination.value?.total_items || 0)
 
-  // Load initial results if query is provided
-  if (initialQuery.length >= minChars) {
-    onMounted(() => {
-      performSearch(initialQuery)
-    })
-  }
 
   return {
     states,

@@ -15,15 +15,13 @@ useSeoMeta({
 const route = useRoute()
 const countrySlug = route.query.country as string
 
-// Local search query
-const searchQuery = ref('')
-
 // Use search composable
 const {
   states,
   pagination,
   loading,
   error,
+  searchQuery,
   search,
   hasResults,
   totalResults,
@@ -34,15 +32,11 @@ const {
   country: countrySlug,
 })
 
-// Load all states on mount
+// Load all states on mount (only once)
 onMounted(() => {
   search('')
 })
 
-// Watch search query and trigger search
-watch(searchQuery, (newQuery) => {
-  search(newQuery)
-})
 
 // Refresh function
 const refresh = () => {
@@ -51,7 +45,7 @@ const refresh = () => {
 
 // Clear search
 const handleClearSearch = () => {
-  searchQuery.value = ''
+  search('')
 }
 
 // Build route URL for state
@@ -82,11 +76,12 @@ const getStateRoute = (state: any) => {
     <div class="mb-4">
       <div class="relative">
         <UiInput
-          v-model="searchQuery"
+          :model-value="searchQuery"
           type="text"
           placeholder="Search states by name..."
           class="bg-card border-border pl-10 pr-10 text-foreground"
           aria-label="Search states"
+          @input="(e) => search((e.target as HTMLInputElement).value)"
         />
         <Search
           class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
