@@ -64,3 +64,27 @@ export interface ApiResponse<T> {
 
 export type StatesApiResponse = ApiResponse<StateResource[]>
 
+// Location Autocomplete API Types
+export interface LocationAttributes {
+  country: string
+  state: string
+  city: string
+  address: string | null
+}
+
+export interface LocationResource {
+  id: number
+  type: 'city'
+  attributes: LocationAttributes
+}
+
+export interface AutocompleteMeta {
+  query: string
+  count: number
+  limit: number
+}
+
+export type LocationAutocompleteResponse = ApiResponse<LocationResource[]> & {
+  meta: AutocompleteMeta
+}
+
