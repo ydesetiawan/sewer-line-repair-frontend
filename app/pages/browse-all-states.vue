@@ -62,7 +62,7 @@ const getStateRoute = (state: any) => {
 
     <!-- Error State -->
     <!-- 404 Not Found State -->
-    <div v-else-if="error && error.statusCode === 404" class="text-center py-20">
+    <div v-else-if="error && 'statusCode' in error && (error as any).statusCode === 404" class="text-center py-20">
       <div class="max-w-md mx-auto space-y-6">
         <MapPin class="w-20 h-20 text-muted-foreground/50 mx-auto" />
         <div>

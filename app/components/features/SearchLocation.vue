@@ -45,7 +45,7 @@ const handleSearchSubmit = (location?: any) => {
   } else if (state && !city) {
     url = `/${countrySlug}/${stateSlug}`
   } else {
-    url = `/${countrySlug}`
+    url = `/browse-all-states?country=${countrySlug}`
   }
   router.push(`${url}`)
 

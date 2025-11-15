@@ -18,7 +18,7 @@ useSeoMeta({
     </div>
     <FeaturesStateCategories />
     <FeaturesDirectoryFeatures />
-    <FeaturesFeaturesSection />
+    <FeaturesSection />
     <FeaturesCTASection />
   </div>
 </template>
