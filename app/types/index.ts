@@ -26,3 +26,41 @@ export interface Contractor {
   }[]
 }
 
+// API Types for State Management
+export interface Country {
+  id: number
+  name: string
+  code: string
+  slug: string
+}
+
+export interface StateAttributes {
+  name: string
+  code: string
+  slug: string
+  country: Country
+}
+
+export interface StateResource {
+  id: string
+  type: 'state'
+  attributes: StateAttributes
+}
+
+export interface PaginationMeta {
+  current_page: number
+  prev_page: number | null
+  next_page: number | null
+  total_items: number
+  total_pages: number
+}
+
+export interface ApiResponse<T> {
+  data: T
+  meta?: {
+    pagination?: PaginationMeta
+  }
+}
+
+export type StatesApiResponse = ApiResponse<StateResource[]>
+
