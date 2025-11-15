@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { MapPin, Loader2, AlertCircle, RefreshCw } from 'lucide-vue-next'
-import { useStates } from '@/composables/useStatesApi'
+import { MapPin, Loader2, AlertCircle, RefreshCw, Search, X } from 'lucide-vue-next'
+import { useStatesSearch } from '@/composables/useStatesSearch'
 import { getCountry} from "@/composables/useContractors";
 
 definePageMeta({
@@ -13,28 +13,45 @@ useSeoMeta({
 })
 
 const route = useRoute()
-const countrySlug = route.query.country as string // Get country from query parameter
+const countrySlug = route.query.country as string
 
-// Fetch all states from API with pagination
-const { states, pagination, loading, error, fetchStates, refresh, hasNextPage, hasPrevPage } = useStates({
-  page: 1,
-  perPage: 20, // Show more states on the full browse page
-  autoFetch: true,
-  country: countrySlug
+// Local search query
+const searchQuery = ref('')
+
+// Use search composable
+const {
+  states,
+  pagination,
+  loading,
+  error,
+  search,
+  hasResults,
+  totalResults,
+} = useStatesSearch({
+  initialQuery: '',
+  debounceMs: 400,
+  minChars: 0, // 0 to show all states when empty
+  country: countrySlug,
 })
 
-// Load more states (next page)
-const loadMore = async () => {
-  if (hasNextPage.value && pagination.value) {
-    await fetchStates(pagination.value.next_page!)
-  }
+// Load all states on mount
+onMounted(() => {
+  search('')
+})
+
+// Watch search query and trigger search
+watch(searchQuery, (newQuery) => {
+  search(newQuery)
+})
+
+// Refresh function
+const refresh = () => {
+  search(searchQuery.value)
 }
 
-// Load previous page
-const loadPrevious = async () => {
-  if (hasPrevPage.value && pagination.value) {
-    await fetchStates(pagination.value.prev_page!)
-  }
+// Clear search
+const handleClearSearch = () => {
+  searchQuery.value = ''
 }
 
 // Build route URL for state
@@ -61,16 +78,55 @@ const getStateRoute = (state: any) => {
       </p>
     </div>
 
-    <div>
-      <FeaturesSearchState />
+    <!-- Search Input -->
+    <div class="mb-4">
+      <div class="relative">
+        <UiInput
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search states by name..."
+          class="bg-card border-border pl-10 pr-10 text-foreground"
+          aria-label="Search states"
+        />
+        <Search
+          class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
+        />
+        <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+          <Loader2
+            v-if="loading"
+            class="w-4 h-4 text-muted-foreground animate-spin"
+          />
+          <button
+            v-else-if="searchQuery"
+            type="button"
+            class="text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Clear search"
+            @click="handleClearSearch"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Top Pagination Info Bar -->
-    <div v-if="pagination" class="mb-8 mt-3">
-        <p class="text-xs text-muted-foreground">
-          Found <span class="text-accent font-bold">{{ states.length }}</span> of
-          <span class="text-accent font-bold">{{ pagination.total_items }}</span> states
-        </p>
+    <!-- Search Results Info -->
+    <div v-if="searchQuery && !loading" class="mb-6">
+      <p class="text-sm text-muted-foreground">
+        <template v-if="hasResults">
+          Found <span class="text-accent font-bold">{{ totalResults }}</span> state{{ totalResults !== 1 ? 's' : '' }}
+          matching "<span class="font-medium">{{ searchQuery }}</span>"
+        </template>
+        <template v-else>
+          No states found matching "<span class="font-medium">{{ searchQuery }}</span>"
+        </template>
+      </p>
+    </div>
+
+    <!-- All States Count (when no search) -->
+    <div v-else-if="!searchQuery && !loading && hasResults" class="mb-6">
+      <p class="text-sm text-muted-foreground">
+        Showing <span class="text-accent font-bold">{{ totalResults }}</span> state{{ totalResults !== 1 ? 's' : '' }}
+      </p>
     </div>
 
     <!-- Loading State -->
@@ -125,11 +181,14 @@ const getStateRoute = (state: any) => {
           >
             <div class="flex items-center gap-3">
               <div class="p-2 bg-accent/10 rounded-lg">
-                <MapPin class="w-5 h-5 text-accent" />
+                <MapPin class="w-5 h-5 text-accent"/>
               </div>
               <div class="flex-1 min-w-0">
                 <h3 class="font-medium group-hover:text-accent transition-colors block truncate">
-                  {{ state.attributes.name }}  • {{ state.attributes.country.name }}
+                  {{ state.attributes.name }}
+                  <span class="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full font-mono">
+                    {{ state.attributes.country.name }}
+                  </span>
                 </h3>
                 <p class="text-sm text-muted-foreground">
                   <span class="text-accent">{{ state.attributes.companies_count }}</span> contractors available
@@ -138,56 +197,6 @@ const getStateRoute = (state: any) => {
             </div>
           </UiCard>
         </NuxtLink>
-      </div>
-
-      <!-- Pagination Controls - Always show when we have data -->
-      <div v-if="pagination" class="space-y-4">
-        <!-- Pagination Buttons -->
-        <div v-if="hasNextPage || hasPrevPage" class="flex justify-center items-center gap-4">
-          <UiButton
-            v-if="hasPrevPage"
-            @click="loadPrevious"
-            variant="outline"
-            size="lg"
-            :disabled="loading"
-            class="gap-2"
-          >
-            <Loader2 v-if="loading" class="w-5 h-5 animate-spin" />
-            <span v-else>← Previous</span>
-          </UiButton>
-
-          <div class="text-sm text-muted-foreground font-medium">
-            Page {{ pagination.current_page }} of {{ pagination.total_pages }}
-          </div>
-
-          <UiButton
-            v-if="hasNextPage"
-            @click="loadMore"
-            variant="outline"
-            size="lg"
-            :disabled="loading"
-            class="gap-2"
-          >
-            <template v-if="loading">
-              <Loader2 class="w-5 h-5 animate-spin" />
-              Loading...
-            </template>
-            <span v-else>Next →</span>
-          </UiButton>
-        </div>
-
-        <!-- Show page info even on single page -->
-        <div v-else class="text-center text-sm text-muted-foreground">
-          Showing all {{ pagination.total_items }} state{{ pagination.total_items !== 1 ? 's' : '' }}
-        </div>
-      </div>
-
-      <!-- Loading indicator during pagination -->
-      <div v-if="loading && states.length" class="flex justify-center py-4">
-        <div class="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 class="w-4 h-4 animate-spin" />
-          <span>Loading more states...</span>
-        </div>
       </div>
     </div>
 

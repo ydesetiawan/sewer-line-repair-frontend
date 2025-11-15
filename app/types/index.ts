@@ -38,6 +38,7 @@ export interface StateAttributes {
   name: string
   code: string
   slug: string
+  companies_count: number
   country: Country
 }
 

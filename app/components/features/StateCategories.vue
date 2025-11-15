@@ -73,10 +73,13 @@ const getStateRoute = (state: any) => {
               <MapPin class="w-5 h-5 text-accent" />
               <div class="flex-1 min-w-0">
                 <span class="font-medium group-hover:text-accent transition-colors block truncate">
-                  {{ state.attributes.name }} • {{ state.attributes.country.name }}
+                  {{ state.attributes.name }}
+                  <span class="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full font-mono">
+                    {{ state.attributes.country.name }}
+                  </span>
                 </span>
                 <span class="text-xs text-muted-foreground">
-                  {{ state.attributes.companies_count }} contractors available
+                  <span class="text-accent">{{ state.attributes.companies_count }}</span> contractors available
                 </span>
               </div>
             </div>
