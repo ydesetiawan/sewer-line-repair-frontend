@@ -17,6 +17,7 @@ useSeoMeta({
       <FeaturesSearchLocation />
     </div>
     <FeaturesStateCategories />
+    <FeaturesDirectoryFeatures />
     <FeaturesFeaturesSection />
     <FeaturesCTASection />
   </div>
