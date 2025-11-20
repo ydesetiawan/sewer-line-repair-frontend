@@ -34,9 +34,9 @@ const handleSearchSubmit = (location?: any) => {
   const { country, state, city, address } = targetLocation.attributes
 
   // Build the route based on available data
-  const countrySlug = getSlug(country)
-  const stateSlug = getSlug(state)
-  const citySlug = getSlug(city)
+  const countrySlug = country
+  const stateSlug = state
+  const citySlug = city
 
   let url = ''
   // Navigate to the appropriate route

@@ -28,13 +28,13 @@
             Directory
           </NuxtLink>
           <NuxtLink to="/directory">
-            <UiButton
+            <BaseButton
               variant="default"
               size="sm"
               class="bg-accent hover:bg-accent/90 text-accent-foreground"
             >
               Find Contractors
-            </UiButton>
+            </BaseButton>
           </NuxtLink>
         </nav>
       </div>
