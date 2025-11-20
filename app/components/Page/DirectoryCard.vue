@@ -17,7 +17,7 @@ const contractorUrl = computed(() => {
 </script>
 
 <template>
-  <UiCard class="p-6 hover:shadow-lg transition-shadow">
+  <BaseCard class="p-6 hover:shadow-lg transition-shadow">
     <div class="flex flex-col md:flex-row gap-6">
       <div class="flex-1 space-y-4">
         <div class="flex items-start justify-between">
@@ -76,10 +76,10 @@ const contractorUrl = computed(() => {
           <span class="text-sm font-medium">Call Now</span>
         </a>
         <NuxtLink :to="contractorUrl">
-          <UiButton variant="outline" class="w-full">View Details</UiButton>
+          <BaseButton variant="outline" class="w-full">View Details</BaseButton>
         </NuxtLink>
       </div>
     </div>
-  </UiCard>
+  </BaseCard>
 </template>
 

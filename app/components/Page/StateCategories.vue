@@ -53,10 +53,10 @@ const getStateRoute = (state: any) => {
           <AlertCircle class="w-16 h-16 text-destructive mx-auto" />
           <h3 class="text-xl font-semibold">Failed to load states</h3>
           <p class="text-muted-foreground">{{ error.message }}</p>
-          <UiButton @click="refresh" variant="outline" class="gap-2">
+          <BaseButton @click="refresh" variant="outline" class="gap-2">
             <RefreshCw class="w-4 h-4" />
             Try Again
-          </UiButton>
+          </BaseButton>
         </div>
       </div>
 
@@ -89,9 +89,9 @@ const getStateRoute = (state: any) => {
         <!-- View All Link -->
         <div class="text-center mt-8">
           <NuxtLink to="/browse-all-states">
-            <UiButton variant="outline" size="lg">
+            <BaseButton variant="outline" size="lg">
               View All States
-            </UiButton>
+            </BaseButton>
           </NuxtLink>
         </div>
       </div>

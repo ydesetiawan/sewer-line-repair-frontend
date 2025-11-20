@@ -25,18 +25,18 @@
 
           <div class="flex gap-4 pt-4">
             <NuxtLink to="/directory">
-              <UiButton size="lg" class="bg-accent hover:bg-accent/90 text-accent-foreground">
+              <BaseButton size="lg" class="bg-accent hover:bg-accent/90 text-accent-foreground">
                 Browse Directory
-              </UiButton>
+              </BaseButton>
             </NuxtLink>
             <a href="#features">
-              <UiButton
+              <BaseButton
                 variant="outline"
                 size="lg"
                 class="border-border hover:bg-secondary bg-transparent"
               >
                 Learn More
-              </UiButton>
+              </BaseButton>
             </a>
           </div>
 

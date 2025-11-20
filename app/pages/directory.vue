@@ -21,11 +21,11 @@ useSeoMeta({
     </div>
 
     <div class="mb-8">
-      <FeaturesSearchLocation />
+      <PageSearchLocation />
     </div>
 
     <div class="grid gap-6">
-      <FeaturesDirectoryCard
+      <PageDirectoryCard
         v-for="contractor in CONTRACTORS"
         :key="contractor.id"
         :contractor="contractor"

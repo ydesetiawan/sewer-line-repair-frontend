@@ -181,7 +181,7 @@ useSeoMeta({
       <!-- Cities Sidebar -->
       <aside class="lg:col-span-1">
         <div class="sticky top-4">
-          <UiCard class="p-4">
+          <BaseCard class="p-4">
             <h2 class="text-lg font-bold mb-4">Browse by City</h2>
             <div class="space-y-1 max-h-[600px] overflow-y-auto">
               <button
@@ -197,7 +197,7 @@ useSeoMeta({
                 </span>
               </button>
             </div>
-          </UiCard>
+          </BaseCard>
         </div>
       </aside>
 
@@ -218,10 +218,10 @@ useSeoMeta({
               <h2 class="text-2xl font-bold mb-2">Failed to load companies</h2>
               <p class="text-muted-foreground">{{ error.message }}</p>
             </div>
-            <UiButton @click="refresh" variant="outline" size="lg" class="gap-2">
+            <BaseButton @click="refresh" variant="outline" size="lg" class="gap-2">
               <RefreshCw class="w-5 h-5" />
               Try Again
-            </UiButton>
+            </BaseButton>
           </div>
         </div>
 
@@ -265,7 +265,7 @@ useSeoMeta({
 
           <!-- Company Cards -->
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <FeaturesCompanyCard
+            <PageCompanyCard
               v-for="company in companies"
               :key="company.id"
               :company="company"
@@ -282,7 +282,7 @@ useSeoMeta({
             <!-- Pagination Controls -->
             <div class="flex items-center gap-2">
               <!-- Previous Button -->
-              <UiButton
+              <BaseButton
                 @click="goToPage(currentPage - 1)"
                 :disabled="!hasPrevPage || loading"
                 variant="outline"
@@ -291,7 +291,7 @@ useSeoMeta({
               >
                 <ChevronLeft class="w-4 h-4" />
                 Previous
-              </UiButton>
+              </BaseButton>
 
               <!-- Page Numbers -->
               <div class="hidden sm:flex items-center gap-1">
@@ -314,7 +314,7 @@ useSeoMeta({
               </div>
 
               <!-- Next Button -->
-              <UiButton
+              <BaseButton
                 @click="goToPage(currentPage + 1)"
                 :disabled="!hasNextPage || loading"
                 variant="outline"
@@ -323,7 +323,7 @@ useSeoMeta({
               >
                 Next
                 <ChevronRight class="w-4 h-4" />
-              </UiButton>
+              </BaseButton>
             </div>
           </div>
         </div>

@@ -58,7 +58,7 @@ const trustBadges = computed(() => {
 </script>
 
 <template>
-  <UiCard class="p-6 hover:shadow-lg transition-all duration-300 border-border">
+  <BaseCard class="p-6 hover:shadow-lg transition-all duration-300 border-border">
     <!-- Company Header -->
     <div class="mb-4">
       <div class="flex items-start justify-between gap-4 mb-3">
@@ -179,11 +179,11 @@ const trustBadges = computed(() => {
         :to="company.attributes.url_path"
         class="block w-full"
       >
-        <UiButton variant="outline" class="w-full">
+        <BaseButton variant="outline" class="w-full">
           View Details
-        </UiButton>
+        </BaseButton>
       </NuxtLink>
     </div>
-  </UiCard>
+  </BaseCard>
 </template>
 

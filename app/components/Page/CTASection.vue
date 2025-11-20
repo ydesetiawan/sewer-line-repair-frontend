@@ -9,12 +9,12 @@
         Start your search today and connect with trusted sewer repair professionals in your area
       </p>
       <NuxtLink to="/directory">
-        <UiButton
+        <BaseButton
           size="lg"
           class="bg-accent hover:bg-accent/90 text-accent-foreground text-lg px-8"
         >
           Get Started Now
-        </UiButton>
+        </BaseButton>
       </NuxtLink>
     </div>
   </section>

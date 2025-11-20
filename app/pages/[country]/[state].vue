@@ -99,10 +99,10 @@ useSeoMeta({
           <h2 class="text-2xl font-bold mb-2">Failed to load state data</h2>
           <p class="text-muted-foreground">{{ error.message }}</p>
         </div>
-        <UiButton @click="refresh" variant="outline" size="lg" class="gap-2">
+        <BaseButton @click="refresh" variant="outline" size="lg" class="gap-2">
           <RefreshCw class="w-5 h-5" />
           Try Again
-        </UiButton>
+        </BaseButton>
       </div>
     </div>
 
@@ -141,7 +141,7 @@ useSeoMeta({
             :to="`/${countrySlug}/${stateSlug}/${city.attributes.slug}`"
             class="group"
           >
-            <UiCard class="p-3 hover:shadow-lg hover:border-accent/50 transition-all cursor-pointer h-full">
+            <BaseCard class="p-3 hover:shadow-lg hover:border-accent/50 transition-all cursor-pointer h-full">
               <div class="flex items-start gap-2">
                 <div class="p-2 bg-accent/10 rounded-lg group-hover:bg-accent/20 transition-colors">
                   <MapPin class="w-2 h-2 text-accent" />
@@ -163,7 +163,7 @@ useSeoMeta({
                   </p>
                 </div>
               </div>
-            </UiCard>
+            </BaseCard>
           </NuxtLink>
         </div>
       </div>
@@ -171,7 +171,7 @@ useSeoMeta({
       <!-- Company Cards -->
       <div class="mb-12 mp-8">
         <h2 class="text-2xl font-bold mb-6">All Contractors in California {{ state }}</h2>
-        <FeaturesCompanyCard
+        <PageCompanyCard
             v-for="company in companies"
             :key="company.id"
             :company="company"

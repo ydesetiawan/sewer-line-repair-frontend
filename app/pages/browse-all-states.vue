@@ -75,7 +75,7 @@ const getStateRoute = (state: any) => {
     <!-- Search Input -->
     <div class="mb-4">
       <div class="relative">
-        <UiInput
+        <BaseInput
           :model-value="searchQuery"
           type="text"
           placeholder="Search states by name..."
@@ -154,10 +154,10 @@ const getStateRoute = (state: any) => {
           <h2 class="text-2xl font-bold mb-2">Failed to load states</h2>
           <p class="text-muted-foreground">{{ error.message }}</p>
         </div>
-        <UiButton @click="refresh" variant="outline" size="lg" class="gap-2">
+        <BaseButton @click="refresh" variant="outline" size="lg" class="gap-2">
           <RefreshCw class="w-5 h-5" />
           Try Again
-        </UiButton>
+        </BaseButton>
       </div>
     </div>
 
@@ -171,7 +171,7 @@ const getStateRoute = (state: any) => {
           :key="state.id"
           :to="getStateRoute(state)"
         >
-          <UiCard
+          <BaseCard
             class="p-6 bg-card hover:bg-card/80 border-border/50 cursor-pointer transition-all hover:shadow-lg hover:border-accent/50"
           >
             <div class="flex items-center gap-3">
@@ -190,7 +190,7 @@ const getStateRoute = (state: any) => {
                 </p>
               </div>
             </div>
-          </UiCard>
+          </BaseCard>
         </NuxtLink>
       </div>
     </div>

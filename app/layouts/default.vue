@@ -3,11 +3,11 @@
 
 <template>
   <div class="min-h-screen bg-background flex flex-col">
-    <LayoutHeader />
+    <BaseLayoutHeader />
     <main class="flex-1">
       <slot />
     </main>
-    <LayoutFooter />
+    <BaseLayoutFooter />
   </div>
 </template>
 

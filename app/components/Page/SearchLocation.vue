@@ -88,7 +88,7 @@ const formatDetailLocation = (location: any) => {
   <div class="w-full relative">
     <div class="flex gap-2">
       <div class="relative flex-1">
-        <UiInput
+        <BaseInput
           v-model="searchInput"
           placeholder="Search by country, city, state, or address..."
           class="bg-card border-border pl-10 pr-10 text-foreground"
