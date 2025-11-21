@@ -192,35 +192,13 @@ onMounted(() => {
       <div class="mb-12">
         <h2 class="text-2xl font-bold mb-6">Browse by City</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <NuxtLink
+          <PageCityCard
             v-for="city in sortedCities"
             :key="city.id"
-            :to="`/${countrySlug}/${stateSlug}/${city.attributes.slug}`"
-            class="group"
-          >
-            <BaseCard class="p-3 hover:shadow-lg hover:border-accent/50 transition-all cursor-pointer h-full">
-              <div class="flex items-start gap-2">
-                <div class="p-2 bg-accent/10 rounded-lg group-hover:bg-accent/20 transition-colors">
-                  <MapPin class="w-2 h-2 text-accent" />
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h3 class="text-xs group-hover:text-accent transition-colors truncate">
-                    <span class="font-bold pr-1">{{ city.attributes.name }}</span>
-                    <span class="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full font-mono">
-                      {{ city.attributes.state.name }}
-                    </span>
-                    <span class="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full font-mono">
-                      {{ city.attributes.country.code }}
-                    </span>
-                  </h3>
-                  <p class="text-xs text-muted-foreground mt-1">
-                    <span class="text-accent font-medium">{{ city.attributes.companies_count }}</span>
-                    {{ city.attributes.companies_count === 1 ? 'contractor' : 'contractors' }}
-                  </p>
-                </div>
-              </div>
-            </BaseCard>
-          </NuxtLink>
+            :city="city"
+            :country-slug="countrySlug"
+            :state-slug="stateSlug"
+          />
         </div>
       </div>
 
