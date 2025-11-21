@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { getSlug } from '@/composables/useContractors'
 
 definePageMeta({
   layout: 'default',
