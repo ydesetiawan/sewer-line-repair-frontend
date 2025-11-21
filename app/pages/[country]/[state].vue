@@ -10,19 +10,13 @@ const stateSlug = route.params.state as string
 const countrySlug = route.params.country as string
 
 // Validate state
-const state = STATES.find((s) => getSlug(s) === stateSlug)
-if (!state) {
-  throw createError({
-    statusCode: 404,
-    statusMessage: 'State not found',
-  })
-}
+const state = stateSlug?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
 
 // Format country name from slug
-const country = countrySlug.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
+const country = countrySlug?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
 
 // Format state name for display
-const stateName = stateSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+const stateName = stateSlug?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 
 useSeoMeta({
   title: `Sewer Repair Contractors in ${state} - Find Local Experts`,
