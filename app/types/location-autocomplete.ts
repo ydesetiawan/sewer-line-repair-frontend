@@ -1,16 +1,16 @@
 import type {LocationResource} from "@/types/index";
 
-export interface ILocationAttributes {
+export interface ILocationAutocompleteAttributes {
     country: string;
     state: string;
     city: string;
     address: string;
 
 }
-export interface ILocation {
+export interface ILocationAutocomplete {
     id: string;
     type: string;
-    attributes: ILocationAttributes
+    attributes: ILocationAutocompleteAttributes
 }
 
 export interface ILocationAutocompleteOptions {
@@ -20,7 +20,7 @@ export interface ILocationAutocompleteOptions {
 }
 
 export interface ILocationAutocompleteReturn {
-    locations: Ref<ILocation[]>
+    locations: Ref<ILocationAutocomplete[]>
     loading: Ref<boolean>
     error: Ref<Error | null>
     meta: Ref<{ query: string; count: number; limit: number } | null>

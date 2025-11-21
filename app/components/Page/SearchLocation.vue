@@ -1,145 +1,224 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { Search, Loader2, MapPin } from 'lucide-vue-next'
-import { useLocationAutocomplete } from '@/composables/useLocationAutocomplete'
-import { getSlug } from '@/composables/useContractors'
+import type { ILocationAutocomplete } from '@/types/location-autocomplete'
 
-const searchInput = ref('')
+// Composables
+const { $publicApi } = useNuxtApp()
 const router = useRouter()
 
-// Use the location autocomplete composable
-const { locations, loading, error, search, clearResults } = useLocationAutocomplete({
-  limit: 8,
-  minChars: 2,
-  debounceMs: 300,
-})
+// Configuration
+const SEARCH_CONFIG = {
+  LIMIT: 8,
+  MIN_CHARS: 2,
+  DEBOUNCE_MS: 300,
+} as const
 
-const handleSearch = (value: string) => {
-  searchInput.value = value
-  search(value)
+// State
+const searchInput = ref('')
+const locations = ref<ILocationAutocomplete[]>([])
+const loading = ref(false)
+const error = ref<Error | null>(null)
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+// Search locations with debounce
+const searchLocations = async (query: string) => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+  }
+
+  // Clear results if query is too short
+  if (query.length < SEARCH_CONFIG.MIN_CHARS) {
+    clearResults()
+    return
+  }
+
+  // Debounce the API call
+  debounceTimer = setTimeout(async () => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await $publicApi<ISlrApiResponse<ILocationAutocomplete[]>>(
+        '/api/v1/locations/autocomplete',
+        {
+          params: {
+            q: query.trim(),
+            limit: SEARCH_CONFIG.LIMIT,
+          },
+        },
+      )
+
+      locations.value = response.data
+    } catch (err) {
+      error.value = err instanceof Error ? err : new Error('Failed to fetch locations')
+      locations.value = []
+      console.error('Location autocomplete error:', err)
+    } finally {
+      loading.value = false
+    }
+  }, SEARCH_CONFIG.DEBOUNCE_MS)
 }
 
-const handleSearchSubmit = (location?: any) => {
-  let targetLocation = location
+// Clear all search results
+const clearResults = () => {
+  locations.value = []
+  error.value = null
+  loading.value = false
 
-  // If no location provided, find first match from suggestions
-  if (!targetLocation && locations.value.length > 0) {
-    targetLocation = locations.value[0]
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
   }
+}
+
+// Convert string to URL slug
+const toSlug = (text: string | undefined | null): string => {
+  return text?.toLowerCase().replace(/\s+/g, '-') ?? ''
+}
+
+// Build URL path from location data
+const buildLocationPath = (location: ILocationAutocomplete): string => {
+  const { country, state, city } = location.attributes
+  const countrySlug = toSlug(country)
+  const stateSlug = toSlug(state)
+  const citySlug = toSlug(city)
+
+  if (city && state) {
+    return `/${countrySlug}/${stateSlug}/${citySlug}`
+  }
+
+  if (state) {
+    return `/${countrySlug}/${stateSlug}`
+  }
+
+  return `/browse-all-states?country=${countrySlug}`
+}
+
+// Navigate to selected location
+const navigateToLocation = (location?: ILocationAutocomplete) => {
+  const targetLocation = location ?? locations.value[0]
 
   if (!targetLocation) {
     return
   }
 
-  const { country, state, city, address } = targetLocation.attributes
-
-  // Build the route based on available data
-  const countrySlug = country
-  const stateSlug = state
-  const citySlug = city
-
-  let url = ''
-  // Navigate to the appropriate route
-  if (city && state) {
-    url = `/${countrySlug}/${stateSlug}/${citySlug}`
-  } else if (state && !city) {
-    url = `/${countrySlug}/${stateSlug}`
-  } else {
-    url = `/browse-all-states?country=${countrySlug}`
-  }
-  router.push(`${url}`)
+  const path = buildLocationPath(targetLocation)
+  router.push(path)
 
   // Clear results and input
   clearResults()
   searchInput.value = ''
 }
 
+// Handle input change
+const handleInput = (value: string) => {
+  searchInput.value = value
+  searchLocations(value)
+}
+
+// Handle Enter key press
 const handleKeyDown = (e: KeyboardEvent) => {
   if (e.key === 'Enter') {
-    handleSearchSubmit()
+    navigateToLocation()
   }
 }
 
-// Format location display text
-const formatLocation = (location: any) => {
+// Format primary location display text
+const formatLocationPrimary = (location: ILocationAutocomplete): string => {
   const { country, city, state, address } = location.attributes
+
   if (address) {
     return `${address}, ${city}, ${state}`
   }
+
   if (city) {
     return `${city}, ${state}`
   }
+
   if (state) {
-    return `${state}`
+    return state
   }
-  return `${country}`
+
+  return country
 }
 
-const formatDetailLocation = (location: any) => {
+// Format secondary location display text
+const formatLocationSecondary = (location: ILocationAutocomplete): string => {
   const { country, state } = location.attributes
-  if (state) {
-    return `${state}, ${country}`
-  }
-  return ``
+
+  return state ? `${state}, ${country}` : ''
 }
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+  }
+})
 </script>
 
 <template>
-  <div class="w-full relative">
+  <div class="relative w-full">
     <div class="flex gap-2">
+      <!-- Search Input -->
       <div class="relative flex-1">
         <BaseInput
           v-model="searchInput"
           placeholder="Search by country, city, state, or address..."
           class="bg-card border-border pl-10 pr-10 text-foreground"
-          @input="handleSearch(searchInput)"
+          @input="handleInput(searchInput)"
           @keydown="handleKeyDown"
         />
+
+        <!-- Search Icon -->
         <Search
-          class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground"
+          class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
         />
 
         <!-- Loading Spinner -->
         <Loader2
           v-if="loading"
-          class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground animate-spin"
+          class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground"
         />
 
         <!-- Autocomplete Dropdown -->
         <div
           v-if="locations.length > 0 || loading || error"
-          class="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 overflow-hidden"
+          class="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-border bg-card shadow-lg"
         >
           <!-- Loading State -->
           <div
             v-if="loading && locations.length === 0"
-            class="px-4 py-3 text-sm text-muted-foreground text-center"
+            class="px-4 py-3 text-center text-sm text-muted-foreground"
           >
-            <Loader2 class="w-4 h-4 animate-spin inline-block mr-2" />
+            <Loader2 class="mr-2 inline-block h-4 w-4 animate-spin" />
             Searching...
           </div>
 
           <!-- Error State -->
           <div
             v-else-if="error"
-            class="px-4 py-3 text-sm text-destructive text-center"
+            class="px-4 py-3 text-center text-sm text-destructive"
           >
             Failed to load suggestions. Please try again.
           </div>
 
-          <!-- Results -->
+          <!-- Results List -->
           <button
             v-for="location in locations"
             :key="location.id"
-            class="w-full text-left px-4 py-2.5 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors border-b border-border last:border-b-0"
-            @click="handleSearchSubmit(location)"
+            type="button"
+            class="w-full border-b border-border px-4 py-2.5 text-left text-foreground transition-colors last:border-b-0 hover:bg-primary hover:text-primary-foreground"
+            @click="navigateToLocation(location)"
           >
             <div class="flex items-start gap-2">
-              <MapPin class="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <div class="flex-1 min-w-0">
-                <div class="font-medium truncate">{{ formatLocation(location) }}</div>
+              <MapPin class="mt-0.5 h-4 w-4 flex-shrink-0" />
+              <div class="min-w-0 flex-1">
+                <div class="truncate font-medium">
+                  {{ formatLocationPrimary(location) }}
+                </div>
                 <div class="text-xs text-muted-foreground">
-                  {{ formatDetailLocation(location) }}
+                  {{ formatLocationSecondary(location) }}
                 </div>
               </div>
             </div>
@@ -147,8 +226,8 @@ const formatDetailLocation = (location: any) => {
 
           <!-- No Results -->
           <div
-            v-if="!loading && !error && locations.length === 0 && searchInput.length >= 2"
-            class="px-4 py-3 text-sm text-muted-foreground text-center"
+            v-if="!loading && !error && locations.length === 0 && searchInput.length >= SEARCH_CONFIG.MIN_CHARS"
+            class="px-4 py-3 text-center text-sm text-muted-foreground"
           >
             No locations found for "{{ searchInput }}"
           </div>
