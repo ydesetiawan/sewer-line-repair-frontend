@@ -11,10 +11,10 @@ import {
   ShieldCheck,
   BadgeCheck
 } from 'lucide-vue-next'
-import type { CompanyResource, ServiceLevel } from '@/types'
+import type {ICompany, ServiceLevel} from "@/types/company";
 
 interface Props {
-  company: CompanyResource
+  company: ICompany
 }
 
 const props = defineProps<Props>()

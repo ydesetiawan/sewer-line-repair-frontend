@@ -1,0 +1,194 @@
+<script setup lang="ts">
+import { MapPin, Loader2, AlertCircle, RefreshCw } from 'lucide-vue-next'
+import type { ICompany } from '@/types/company'
+import type { ICity } from '@/types/city'
+
+interface Props {
+  stateSlug: string
+  countrySlug: string
+  stateName: string
+}
+
+const props = defineProps<Props>()
+
+// Reactive state
+const companies = ref<ICompany[]>([])
+const cities = ref<ICity[]>([])
+const pagination = ref<IMetaPagination | null>(null)
+const loading = ref(false)
+const error = ref<Error | null>(null)
+
+const { $publicApi } = useNuxtApp()
+
+/**
+ * Fetch companies and cities data from API
+ */
+const fetchData = async () => {
+  loading.value = true
+  error.value = null
+
+  try {
+    const response = await ($publicApi as any)(
+      `/api/v1/states/${props.stateSlug}/companies`,
+      {
+        params: {
+          page: 1,
+          per_page: 20,
+        },
+      }
+    ) as ISlrApiResponse<ICompany[]> & {
+      meta?: {
+        cities?: {
+          data: ICity[]
+        }
+        pagination?: IMetaPagination
+      }
+    }
+
+    companies.value = response.data || []
+    cities.value = response.meta?.cities?.data || []
+    pagination.value = response.meta?.pagination || null
+  } catch (err) {
+    error.value = err instanceof Error ? err : new Error('Failed to fetch data')
+    companies.value = []
+    cities.value = []
+    pagination.value = null
+    console.error('Error fetching state data:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+/**
+ * Get state name from first city or format from slug
+ */
+const displayStateName = computed(() => {
+  const firstCity = cities.value[0]
+  if (firstCity) {
+    return firstCity.attributes.state.name
+  }
+  return props.stateName
+})
+
+/**
+ * Sort cities by companies count (descending)
+ */
+const sortedCities = computed(() => {
+  return [...cities.value].sort((a, b) =>
+    b.attributes.companies_count - a.attributes.companies_count
+  )
+})
+
+/**
+ * Total companies count from pagination
+ */
+const totalCompanies = computed(() => pagination.value?.total_items || 0)
+
+// Fetch data on mount
+onMounted(() => {
+  fetchData()
+})
+</script>
+
+<template>
+  <div>
+    <!-- Loading State -->
+    <div v-if="loading" class="py-20">
+      <div class="text-center space-y-4">
+        <Loader2 class="w-16 h-16 text-accent animate-spin mx-auto" />
+        <p class="text-lg text-muted-foreground">Loading cities...</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="text-center py-20">
+      <div class="max-w-md mx-auto space-y-6">
+        <AlertCircle class="w-20 h-20 text-destructive mx-auto" />
+        <div>
+          <h2 class="text-2xl font-bold mb-2">Failed to load state data</h2>
+          <p class="text-muted-foreground">{{ error.message }}</p>
+        </div>
+        <BaseButton @click="fetchData" variant="outline" size="lg" class="gap-2">
+          <RefreshCw class="w-5 h-5" />
+          Try Again
+        </BaseButton>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="!cities.length" class="text-center py-20">
+      <div class="max-w-md mx-auto space-y-4">
+        <MapPin class="w-20 h-20 text-muted-foreground/50 mx-auto" />
+        <div>
+          <h2 class="text-2xl font-bold mb-2">No Cities Found</h2>
+          <p class="text-muted-foreground">
+            There are currently no cities available in {{ displayStateName }}. Please check back later.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div v-else>
+      <!-- Header -->
+      <div class="mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">
+          Sewer Repair Contractors in {{ displayStateName }}
+        </h1>
+        <p class="text-xl text-muted-foreground">
+          Browse {{ totalCompanies }} verified contractor{{ totalCompanies !== 1 ? 's' : '' }}
+          across {{ cities.length }} cit{{ cities.length !== 1 ? 'ies' : 'y' }}
+        </p>
+      </div>
+
+      <!-- Cities Grid -->
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold mb-6">Browse by City</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <NuxtLink
+            v-for="city in sortedCities"
+            :key="city.id"
+            :to="`/${countrySlug}/${stateSlug}/${city.attributes.slug}`"
+            class="group"
+          >
+            <BaseCard class="p-3 hover:shadow-lg hover:border-accent/50 transition-all cursor-pointer h-full">
+              <div class="flex items-start gap-2">
+                <div class="p-2 bg-accent/10 rounded-lg group-hover:bg-accent/20 transition-colors">
+                  <MapPin class="w-2 h-2 text-accent" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-xs group-hover:text-accent transition-colors truncate">
+                    <span class="font-bold pr-1">{{ city.attributes.name }}</span>
+                    <span class="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full font-mono">
+                      {{ city.attributes.state.name }}
+                    </span>
+                    <span class="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full font-mono">
+                      {{ city.attributes.country.code }}
+                    </span>
+                  </h3>
+                  <p class="text-xs text-muted-foreground mt-1">
+                    <span class="text-accent font-medium">{{ city.attributes.companies_count }}</span>
+                    {{ city.attributes.companies_count === 1 ? 'contractor' : 'contractors' }}
+                  </p>
+                </div>
+              </div>
+            </BaseCard>
+          </NuxtLink>
+        </div>
+      </div>
+
+      <!-- Company Cards -->
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold mb-6">All Contractors in {{ displayStateName }}</h2>
+        <div class="space-y-6">
+          <PageCompanyCard
+            v-for="company in companies"
+            :key="company.id"
+            :company="company"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
