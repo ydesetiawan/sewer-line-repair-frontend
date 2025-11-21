@@ -40,7 +40,7 @@ const fetchData = async (page = 1, append = false) => {
       `/api/v1/states/${props.stateSlug}/companies`,
       {
         params: {
-          page: 1,
+          page: page,
           per_page: 20,
         },
       }
@@ -53,7 +53,6 @@ const fetchData = async (page = 1, append = false) => {
       }
     }
 
-    companies.value = response.data || []
     if (append) {
       // Append new companies to existing list
       companies.value = [...companies.value, ...(response.data || [])]
