@@ -18,7 +18,6 @@ useSeoMeta({
     </div>
     <PageStateCategories />
     <PageDirectoryFeatures />
-    <PageSection />
     <PageCTASection />
   </div>
 </template>
