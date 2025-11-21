@@ -1,32 +1,53 @@
 <script setup lang="ts">
 import { MapPin, Loader2, AlertCircle, RefreshCw } from 'lucide-vue-next'
-import { useStates } from '@/composables/useStatesApi'
+import type { IState } from '@/types/state'
 
-// Fetch states from API with pagination
-const { states, pagination, loading, error, fetchStates, refresh, hasNextPage, hasPrevPage } = useStates({
-  page: 1,
-  perPage: 8, // Show 8 states initially
-  autoFetch: true,
-})
+const { $publicApi } = useNuxtApp()
 
-// Load more states
-const loadMore = async () => {
-  if (hasNextPage.value && pagination.value) {
-    await fetchStates(pagination.value.next_page!)
+// Reactive state
+const states = ref<IState[]>([])
+const pagination = ref<IMetaPagination | null>(null)
+const loading = ref(false)
+const error = ref<Error | null>(null)
+
+// Fetch states from API
+const fetchStates = async (page: number = 1, perPage: number = 8) => {
+  loading.value = true
+  error.value = null
+
+  try {
+    const response = await $publicApi<ISlrApiResponse<IState[]>>('/api/v1/states', {
+      params: {
+        page,
+        per_page: perPage,
+      },
+    })
+
+    states.value = response.data
+    pagination.value = response.meta?.pagination || null
+  } catch (err) {
+    error.value = err instanceof Error ? err : new Error('Failed to fetch states')
+    console.error('Error fetching states:', err)
+  } finally {
+    loading.value = false
   }
 }
 
-// Go to previous page
-const loadPrevious = async () => {
-  if (hasPrevPage.value && pagination.value) {
-    await fetchStates(pagination.value.prev_page!)
-  }
+// Refresh current page
+const refresh = async () => {
+  await fetchStates(pagination.value?.current_page || 1, 8)
 }
+
 
 // Build route URL for state
-const getStateRoute = (state: any) => {
+const getStateRoute = (state: IState) => {
   return `/${state.attributes.country.slug}/${state.attributes.slug}`
 }
+
+// Fetch states on mount
+onMounted(() => {
+  fetchStates(1, 8)
+})
 </script>
 
 <template>

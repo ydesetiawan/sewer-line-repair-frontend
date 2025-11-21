@@ -5,14 +5,16 @@ declare global {
       query: string;
       count: number;
       limit: number;
-      pagination: {
-        current_page: number;
-        next_page: null | number;
-        prev_page: null | number;
-        total_pages: number;
-      };
+      pagination: IMetaPagination;
     };
   }
-}
 
+  interface IMetaPagination {
+    current_page: number
+    prev_page: number | null
+    next_page: number | null
+    total_items: number
+    total_pages: number
+  }
+}
 export {};
