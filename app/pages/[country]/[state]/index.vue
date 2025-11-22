@@ -7,6 +7,11 @@ definePageMeta({
 const route = useRoute()
 const stateSlug = route.params.state as string
 const countrySlug = route.params.country as string
+const citySlug = route.params.city as string
+
+if(citySlug) {
+  console.log(citySlug)
+}
 
 // Validate state
 const state = stateSlug?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
