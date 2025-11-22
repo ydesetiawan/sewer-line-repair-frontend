@@ -40,6 +40,7 @@ const breadcrumbItems = computed(() => [
         :country-slug="countrySlug"
         :state-name="state"
         :city-slug="citySlug"
+        :city-name="city"
     />
   </div>
 </template>

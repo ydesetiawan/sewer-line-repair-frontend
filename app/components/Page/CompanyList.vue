@@ -8,6 +8,7 @@ interface Props {
   countrySlug: string
   stateName: string
   citySlug?: string | null
+  cityName?: string | null
 }
 
 const props = defineProps<Props>()
@@ -123,10 +124,9 @@ const loadMore = async () => {
 /**
  * Get state name from first city or format from slug
  */
-const displayStateName = computed(() => {
-  const firstCity = cities.value[0]
-  if (firstCity) {
-    return firstCity.attributes.state.name
+const displayLocationName = computed(() => {
+  if (props.cityName) {
+    return props.cityName
   }
   return props.stateName
 })
@@ -201,10 +201,16 @@ onMounted(() => {
       <!-- Header -->
       <div class="mb-12">
         <h1 class="text-4xl md:text-5xl font-bold mb-4">
-          Sewer Repair Contractors in {{ displayStateName }}
+          Sewer Repair Contractors in {{ displayLocationName }}
         </h1>
         <p class="text-xl text-muted-foreground">
-          Connecting you with trusted sewer repair professionals.
+          <span v-if="!cities.length" class="text-xl text-muted-foreground">
+            Browse {{ totalCompanies }} verified contractor{{ totalCompanies !== 1 ? 's' : '' }}
+            then, will connecting you with trusted sewer repair professionals.
+          </span>
+          <span v-else class="text-xl text-muted-foreground">
+            Connecting you with trusted sewer repair professionals.
+          </span>
         </p>
       </div>
 
@@ -224,7 +230,7 @@ onMounted(() => {
 
       <!-- Search Bar -->
       <div class="mb-8">
-        <p class="text-xl text-muted-foreground">
+        <p v-if="cities.length > 0" class="text-xl text-muted-foreground">
           Browse {{ totalCompanies }} verified contractor{{ totalCompanies !== 1 ? 's' : '' }}
           <span v-if="cities.length > 0">across {{ cities.length }} cit{{ cities.length !== 1 ? 'ies' : 'y' }}</span>
         </p>
@@ -266,7 +272,7 @@ onMounted(() => {
           <div>
             <h2 class="text-2xl font-bold mb-2">No Contractors Found</h2>
             <p class="text-muted-foreground">
-              There are currently no companies available in {{ displayStateName }}. Please check back later.
+              There are currently no companies available in {{ displayLocationName }}. Please check back later.
             </p>
           </div>
         </div>
@@ -277,7 +283,7 @@ onMounted(() => {
         <div class="flex items-center justify-between mb-6">
           <div>
             <h2 class="text-2xl font-bold">
-              {{ searchQuery ? 'Search Results' : `All Contractors in ${displayStateName}` }}
+              {{ searchQuery ? 'Search Results' : `All Contractors in ${displayLocationName}` }}
             </h2>
             <p v-if="searchQuery && companies.length > 0" class="text-sm text-muted-foreground mt-1">
               Found {{ totalCompanies }} result{{ totalCompanies !== 1 ? 's' : '' }} for "{{ searchQuery }}"
@@ -295,7 +301,7 @@ onMounted(() => {
             <div>
               <h3 class="text-xl font-semibold mb-2">No Results Found</h3>
               <p class="text-muted-foreground mb-4">
-                We couldn't find any contractors matching "{{ searchQuery }}" in {{ displayStateName }}.
+                We couldn't find any contractors matching "{{ searchQuery }}" in {{ displayLocationName }}.
               </p>
               <BaseButton @click="clearSearch" variant="outline" size="default" class="gap-2">
                 <X class="w-4 h-4" />
