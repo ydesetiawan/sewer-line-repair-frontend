@@ -2,6 +2,8 @@
 import { MapPin, Loader2, AlertCircle, RefreshCw, Search, X } from 'lucide-vue-next'
 import type { IState } from '@/types/state'
 
+const ALL_STATES = 'browse-all-states'
+
 // Props
 interface Props {
   country?: string | null
@@ -53,7 +55,7 @@ const fetchStates = async (query: string = '') => {
 
     // Add country filter if provided
     if (props.country) {
-      params.country = props.country
+      params.country = props.country === ALL_STATES ? null : props.country
     }
 
     const response = await ($publicApi as any)('/api/v1/states', {

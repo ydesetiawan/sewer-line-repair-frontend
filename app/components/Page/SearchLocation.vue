@@ -91,7 +91,7 @@ const buildLocationPath = (location: ILocationAutocomplete): string => {
     return `/${countrySlug}/${stateSlug}`
   }
 
-  return `/browse-all-states?country=${countrySlug}`
+  return `/${countrySlug}`
 }
 
 // Navigate to selected location

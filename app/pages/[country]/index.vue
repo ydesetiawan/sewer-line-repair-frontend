@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { getCountry } from '@/composables/useContractors'
 
 definePageMeta({
   layout: 'default',
@@ -10,9 +9,11 @@ useSeoMeta({
   description: 'Find sewer repair contractors in all states across the United States.',
 })
 
-// Get country from query params
 const route = useRoute()
-const countrySlug = computed(() => route.query.country as string | undefined)
+const countrySlug = route.params.country as string
+
+// Format country name from slug
+const country = countrySlug?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
 </script>
 
 <template>
@@ -24,8 +25,8 @@ const countrySlug = computed(() => route.query.country as string | undefined)
         <template v-if="countrySlug">
           <li>/</li>
           <li>
-            <NuxtLink :to="`/browse-all-states?country=${countrySlug}`" class="hover:text-foreground">
-              {{ getCountry(countrySlug) }}
+            <NuxtLink :to="`/${countrySlug}`" class="hover:text-foreground">
+              {{ country }}
             </NuxtLink>
           </li>
         </template>

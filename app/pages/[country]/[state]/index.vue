@@ -5,26 +5,18 @@ definePageMeta({
 })
 
 const route = useRoute()
-const stateSlug = route.params.state as string
 const countrySlug = route.params.country as string
-const citySlug = route.params.city as string
-
-if(citySlug) {
-  console.log(citySlug)
-}
-
-// Validate state
-const state = stateSlug?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
+const stateSlug = route.params.state as string
 
 // Format country name from slug
 const country = countrySlug?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
 
-// Format state name for display
-const stateName = stateSlug?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+// Validate state
+const state = stateSlug?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
 
 useSeoMeta({
   title: `Sewer Repair Contractors in ${state} - Find Local Experts`,
-  description: `Find licensed and trusted plumbing and sewer repair companies in ${stateName}. Browse verified professionals across all cities.`,
+  description: `Find licensed and trusted plumbing and sewer repair companies in ${state}. Browse verified professionals across all cities.`,
 })
 </script>
 
@@ -36,7 +28,7 @@ useSeoMeta({
         <li><NuxtLink to="/" class="hover:text-foreground">Home</NuxtLink></li>
         <li>/</li>
         <li>
-          <NuxtLink :to="`/browse-all-states?country=${countrySlug}`" class="hover:text-foreground">
+          <NuxtLink :to="`/${countrySlug}`" class="hover:text-foreground">
             {{ country }}
           </NuxtLink>
         </li>
@@ -46,10 +38,10 @@ useSeoMeta({
     </nav>
 
     <!-- State with Companies Component -->
-    <PageStateWithCompany
+    <PageCompanyList
       :state-slug="stateSlug"
       :country-slug="countrySlug"
-      :state-name="stateName"
+      :state-name="state"
     />
   </div>
 </template>

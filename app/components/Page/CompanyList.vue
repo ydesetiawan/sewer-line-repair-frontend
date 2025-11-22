@@ -7,6 +7,7 @@ interface Props {
   stateSlug: string
   countrySlug: string
   stateName: string
+  citySlug?: string | null
 }
 
 const props = defineProps<Props>()
@@ -42,6 +43,7 @@ const fetchData = async (page = 1, append = false) => {
         params: {
           page: page,
           per_page: 20,
+          city: props.citySlug || null
         },
       }
     ) as ISlrApiResponse<ICompany[]> & {
@@ -162,21 +164,8 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div v-else-if="!cities.length" class="text-center py-20">
-      <div class="max-w-md mx-auto space-y-4">
-        <MapPin class="w-20 h-20 text-muted-foreground/50 mx-auto" />
-        <div>
-          <h2 class="text-2xl font-bold mb-2">No Cities Found</h2>
-          <p class="text-muted-foreground">
-            There are currently no cities available in {{ displayStateName }}. Please check back later.
-          </p>
-        </div>
-      </div>
-    </div>
-
     <!-- Content -->
-    <div v-else>
+    <div>
       <!-- Header -->
       <div class="mb-12">
         <h1 class="text-4xl md:text-5xl font-bold mb-4">
@@ -184,12 +173,12 @@ onMounted(() => {
         </h1>
         <p class="text-xl text-muted-foreground">
           Browse {{ totalCompanies }} verified contractor{{ totalCompanies !== 1 ? 's' : '' }}
-          across {{ cities.length }} cit{{ cities.length !== 1 ? 'ies' : 'y' }}
+          <span v-if="cities.length > 0">across {{ cities.length }} cit{{ cities.length !== 1 ? 'ies' : 'y' }}</span>
         </p>
       </div>
 
       <!-- Cities Grid -->
-      <div class="mb-12">
+      <div class="mb-12" v-if="cities.length > 0">
         <h2 class="text-2xl font-bold mb-6">Browse by City</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <PageCityCard
@@ -199,6 +188,18 @@ onMounted(() => {
             :country-slug="countrySlug"
             :state-slug="stateSlug"
           />
+        </div>
+      </div>
+
+      <div v-else-if="!companies.length" class="text-center py-20">
+        <div class="max-w-md mx-auto space-y-4">
+          <MapPin class="w-20 h-20 text-muted-foreground/50 mx-auto"/>
+          <div>
+            <h2 class="text-2xl font-bold mb-2">No Companies Found</h2>
+            <p class="text-muted-foreground">
+              There are currently no companies available in {{ displayStateName }}. Please check back later.
+            </p>
+          </div>
         </div>
       </div>
 
