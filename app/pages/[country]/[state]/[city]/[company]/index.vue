@@ -1,6 +1,4 @@
 <script setup lang="ts">
-
-
 definePageMeta({
   layout: 'default',
 })
@@ -17,9 +15,12 @@ const state = formatSlugToTitle(stateSlug)
 const city = formatSlugToTitle(citySlug)
 const company = formatSlugToTitle(companySlug)
 
+// SEO Meta Tags
 useSeoMeta({
-  title: `Sewer Repair Contractors in ${state} - Find Local Experts`,
-  description: `Find licensed and trusted plumbing and sewer repair with company ${company} in ${state}. Browse verified professionals across in ${city}.`,
+  title: `${company} - Sewer Repair Contractor in ${city}, ${state}`,
+  description: `Contact ${company} for professional plumbing and sewer repair services in ${city}, ${state}. Licensed, insured, and trusted by local residents.`,
+  ogTitle: `${company} - Sewer Repair Services in ${city}`,
+  ogDescription: `Professional sewer repair and plumbing services in ${city}, ${state}. Get quotes and reviews from ${company}.`,
 })
 
 // Breadcrumb items
@@ -33,10 +34,14 @@ const breadcrumbItems = computed(() => [
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Breadcrumb Navigation -->
-    <BaseBreadcrumb :items="breadcrumbItems" />
+    <div class="mb-6">
+      <BaseBreadcrumb :items="breadcrumbItems" />
+    </div>
 
+    <!-- Company Detail Component -->
+    <PageCompanyDetail :company-slug="companySlug" />
   </div>
 </template>
 
