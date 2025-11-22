@@ -177,10 +177,11 @@ const formattedWorkingHours = computed<IFormattedSchedule[]>(() => {
   const now = new Date()
   const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' })
 
-  const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+  const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const
+  type DayOfWeek = typeof daysOrder[number]
 
   return daysOrder.map(day => {
-    const hours = company.value!.attributes.working_hours[day] || 'Closed'
+    const hours = company.value!.attributes.working_hours[day as DayOfWeek] || 'Closed'
     return {
       day,
       hours,
@@ -285,60 +286,164 @@ onMounted(() => {
         </BaseCard>
 
         <!-- About Section -->
-        <BaseCard class="p-6">
-          <h2 class="text-2xl font-bold mb-4">About Us</h2>
-          <p class="text-muted-foreground leading-relaxed">
-            {{ company.attributes.description }}
-          </p>
-        </BaseCard>
+        <div class="space-y-6">
+          <!-- Company Description -->
+          <BaseCard class="p-6">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-2.5 shadow-lg">
+                <MessageSquare class="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold">About Us</h2>
+                <p class="text-sm text-muted-foreground">Get to know our company</p>
+              </div>
+            </div>
 
-        <!-- Service Categories -->
-        <BaseCard v-if="company.attributes.service_categories.length > 0" class="p-6">
-          <h2 class="text-2xl font-bold mb-4">Our Services</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div
-              v-for="category in company.attributes.service_categories"
-              :key="category.id"
-              class="border rounded-lg p-4 hover:border-accent hover:shadow-md transition-all cursor-pointer"
-            >
-              <div class="flex items-start">
-                <div class="bg-accent/10 rounded-lg p-3 mr-4">
-                  <Award class="w-5 h-5 text-accent" />
+            <div class="prose max-w-none">
+              <p class="text-muted-foreground leading-relaxed text-base">
+                {{ company.attributes.description }}
+              </p>
+            </div>
+
+            <!-- Company Highlights -->
+            <div class="mt-6 pt-6 border-t">
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl">
+                  <div class="text-2xl font-bold text-blue-600 mb-1">{{ company.attributes.service_level }}</div>
+                  <div class="text-xs text-muted-foreground">Service Level</div>
                 </div>
-                <div>
-                  <h3 class="font-semibold mb-1">{{ category.name }}</h3>
-                  <p class="text-sm text-muted-foreground">{{ category.description }}</p>
+                <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl">
+                  <div class="text-2xl font-bold text-purple-600 mb-1">{{ company.attributes.total_reviews }}</div>
+                  <div class="text-xs text-muted-foreground">Customer Reviews</div>
+                </div>
+                <div class="text-center p-4 bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl">
+                  <div class="text-2xl font-bold text-green-600 mb-1">{{ formattedRating }}★</div>
+                  <div class="text-xs text-muted-foreground">Average Rating</div>
                 </div>
               </div>
             </div>
-          </div>
-        </BaseCard>
+          </BaseCard>
 
-        <!-- Working Hours -->
-        <BaseCard class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-bold">Business Hours</h2>
-          </div>
-          <div class="space-y-3">
-            <div
-              v-for="schedule in formattedWorkingHours"
-              :key="schedule.day"
-              class="flex justify-between items-center py-2 border-b last:border-b-0"
-              :class="schedule.isToday ? 'bg-accent/5 -mx-2 px-2 rounded' : ''"
-            >
-              <span class="font-medium" :class="schedule.isToday ? 'text-accent' : ''">
-                {{ schedule.day }}
-                <span v-if="schedule.isToday" class="text-xs ml-1">(Today)</span>
-              </span>
-              <span
-                class="text-muted-foreground"
-                :class="schedule.isClosed ? 'text-destructive font-medium' : ''"
-              >
-                {{ schedule.hours }}
-              </span>
+          <!-- Our Services Section -->
+          <BaseCard v-if="company.attributes.service_categories.length > 0" class="p-6">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-2.5 shadow-lg">
+                <Award class="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold">Our Services</h2>
+                <p class="text-sm text-muted-foreground">Professional solutions we offer</p>
+              </div>
             </div>
-          </div>
-        </BaseCard>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div
+                v-for="category in company.attributes.service_categories"
+                :key="category.id"
+                class="group relative overflow-hidden border-2 border-gray-200 rounded-xl p-5 hover:border-accent hover:shadow-lg transition-all duration-300 cursor-pointer"
+              >
+                <!-- Hover gradient overlay -->
+                <div class="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                <div class="relative flex items-start gap-4">
+                  <div class="bg-gradient-to-br from-accent to-accent/80 rounded-lg p-3 shadow-md group-hover:scale-110 transition-transform">
+                    <Award class="w-5 h-5 text-white" />
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="font-bold text-lg mb-2 group-hover:text-accent transition-colors">
+                      {{ category.name }}
+                    </h3>
+                    <p class="text-sm text-muted-foreground leading-relaxed">
+                      {{ category.description }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Service CTA -->
+            <div class="mt-6 p-4 bg-gradient-to-r from-accent/10 to-accent/5 border border-accent/20 rounded-xl">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="bg-accent rounded-lg p-2">
+                    <Phone class="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p class="font-semibold text-sm">Need a service?</p>
+                    <p class="text-xs text-muted-foreground">Contact us for a free consultation</p>
+                  </div>
+                </div>
+                <a
+                  :href="`tel:${company.attributes.phone}`"
+                  class="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-sm font-medium"
+                >
+                  Call Now
+                </a>
+              </div>
+            </div>
+          </BaseCard>
+
+          <!-- Business Hours Section -->
+          <BaseCard class="p-6">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-2.5 shadow-lg">
+                <Clock class="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold">Business Hours</h2>
+                <p class="text-sm text-muted-foreground">When you can reach us</p>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div
+                v-for="schedule in formattedWorkingHours"
+                :key="schedule.day"
+                class="group flex justify-between items-center py-3 px-4 rounded-lg transition-all"
+                :class="schedule.isToday ? 'bg-accent/10 border-2 border-accent/30 shadow-sm' : 'border border-transparent hover:bg-gray-50'"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-2 h-2 rounded-full"
+                    :class="schedule.isToday ? 'bg-accent animate-pulse' : 'bg-gray-300'"
+                  ></div>
+                  <span
+                    class="font-semibold"
+                    :class="schedule.isToday ? 'text-accent' : 'text-gray-900'"
+                  >
+                    {{ schedule.day }}
+                    <span v-if="schedule.isToday" class="ml-2 text-xs px-2 py-0.5 bg-accent text-white rounded-full">
+                      Today
+                    </span>
+                  </span>
+                </div>
+                <span
+                  class="font-medium"
+                  :class="schedule.isClosed ? 'text-red-600 font-semibold' : 'text-muted-foreground'"
+                >
+                  {{ schedule.hours }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Operating Status Badge -->
+            <div class="mt-6 pt-6 border-t">
+              <div class="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                <div class="flex items-center gap-3">
+                  <div class="relative">
+                    <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <div class="absolute inset-0 w-3 h-3 bg-green-500 rounded-full animate-ping opacity-75"></div>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-green-900 text-sm">Available for Service</p>
+                    <p class="text-xs text-green-700">Contact us anytime for urgent needs</p>
+                  </div>
+                </div>
+                <Shield class="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+          </BaseCard>
+        </div>
 
         <!-- Reviews Section -->
         <BaseCard class="p-6">
