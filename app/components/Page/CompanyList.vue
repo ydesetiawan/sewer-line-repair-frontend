@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MapPin, Loader2, AlertCircle, RefreshCw, ChevronDown } from 'lucide-vue-next'
+import { MapPin, Loader2, AlertCircle, RefreshCw, ChevronDown, Search, X } from 'lucide-vue-next'
 import type { ICompany } from '@/types/company'
 import type { ICity } from '@/types/city'
 
@@ -20,6 +20,8 @@ const loading = ref(false)
 const loadingMore = ref(false)
 const error = ref<Error | null>(null)
 const currentPage = ref(1)
+const searchQuery = ref('')
+const isSearching = ref(false)
 
 const { $publicApi } = useNuxtApp()
 
@@ -43,7 +45,8 @@ const fetchData = async (page = 1, append = false) => {
         params: {
           page: page,
           per_page: 20,
-          city: props.citySlug || null
+          city: props.citySlug || null,
+          company_name: searchQuery.value || null,
         },
       }
     ) as ISlrApiResponse<ICompany[]> & {
@@ -77,7 +80,36 @@ const fetchData = async (page = 1, append = false) => {
   } finally {
     loading.value = false
     loadingMore.value = false
+    isSearching.value = false
   }
+}
+
+/**
+ * Handle search input with debouncing
+ */
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+const handleSearch = () => {
+  isSearching.value = true
+
+  // Clear existing timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+
+  // Debounce search by 500ms
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+    fetchData(1, false)
+  }, 500)
+}
+
+/**
+ * Clear search and reset results
+ */
+const clearSearch = () => {
+  searchQuery.value = ''
+  currentPage.value = 1
+  fetchData(1, false)
 }
 
 /**
@@ -172,8 +204,7 @@ onMounted(() => {
           Sewer Repair Contractors in {{ displayStateName }}
         </h1>
         <p class="text-xl text-muted-foreground">
-          Browse {{ totalCompanies }} verified contractor{{ totalCompanies !== 1 ? 's' : '' }}
-          <span v-if="cities.length > 0">across {{ cities.length }} cit{{ cities.length !== 1 ? 'ies' : 'y' }}</span>
+          Connecting you with trusted sewer repair professionals.
         </p>
       </div>
 
@@ -182,20 +213,58 @@ onMounted(() => {
         <h2 class="text-2xl font-bold mb-6">Browse by City</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <PageCityCard
-            v-for="city in sortedCities"
-            :key="city.id"
-            :city="city"
-            :country-slug="countrySlug"
-            :state-slug="stateSlug"
+              v-for="city in sortedCities"
+              :key="city.id"
+              :city="city"
+              :country-slug="countrySlug"
+              :state-slug="stateSlug"
           />
         </div>
       </div>
 
-      <div v-else-if="!companies.length" class="text-center py-20">
+      <!-- Search Bar -->
+      <div class="mb-8">
+        <p class="text-xl text-muted-foreground">
+          Browse {{ totalCompanies }} verified contractor{{ totalCompanies !== 1 ? 's' : '' }}
+          <span v-if="cities.length > 0">across {{ cities.length }} cit{{ cities.length !== 1 ? 'ies' : 'y' }}</span>
+        </p>
+        <div class="mt-6">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search class="w-5 h-5 text-muted-foreground" />
+            </div>
+            <input
+              id="company-search"
+              v-model="searchQuery"
+              @input="handleSearch"
+              type="text"
+              placeholder="Search by contractor name..."
+              class="w-full pl-10 pr-10 py-3 border border-input rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+            />
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
+              <Loader2 v-if="isSearching" class="w-5 h-5 text-muted-foreground animate-spin" />
+              <button
+                v-if="searchQuery"
+                @click="clearSearch"
+                type="button"
+                class="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear search"
+              >
+                <X class="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          <p v-if="searchQuery" class="mt-2 text-sm text-muted-foreground">
+            Searching for "{{ searchQuery }}"...
+          </p>
+        </div>
+      </div>
+
+      <div v-if="!companies.length" class="text-center py-20">
         <div class="max-w-md mx-auto space-y-4">
           <MapPin class="w-20 h-20 text-muted-foreground/50 mx-auto"/>
           <div>
-            <h2 class="text-2xl font-bold mb-2">No Companies Found</h2>
+            <h2 class="text-2xl font-bold mb-2">No Contractors Found</h2>
             <p class="text-muted-foreground">
               There are currently no companies available in {{ displayStateName }}. Please check back later.
             </p>
@@ -206,13 +275,37 @@ onMounted(() => {
       <!-- Company Cards -->
       <div class="mb-12">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold">All Contractors in {{ displayStateName }}</h2>
+          <div>
+            <h2 class="text-2xl font-bold">
+              {{ searchQuery ? 'Search Results' : `All Contractors in ${displayStateName}` }}
+            </h2>
+            <p v-if="searchQuery && companies.length > 0" class="text-sm text-muted-foreground mt-1">
+              Found {{ totalCompanies }} result{{ totalCompanies !== 1 ? 's' : '' }} for "{{ searchQuery }}"
+            </p>
+          </div>
           <p class="text-sm text-muted-foreground">
-            Showing {{ loadedCount }} of {{ totalCompanies }} companies
+            Showing {{ loadedCount }} of {{ totalCompanies }} contractors
           </p>
         </div>
 
-        <div class="space-y-6">
+        <!-- No Results Message -->
+        <div v-if="!loading && companies.length === 0 && searchQuery" class="text-center py-12">
+          <div class="max-w-md mx-auto space-y-4">
+            <Search class="w-16 h-16 text-muted-foreground/50 mx-auto" />
+            <div>
+              <h3 class="text-xl font-semibold mb-2">No Results Found</h3>
+              <p class="text-muted-foreground mb-4">
+                We couldn't find any contractors matching "{{ searchQuery }}" in {{ displayStateName }}.
+              </p>
+              <BaseButton @click="clearSearch" variant="outline" size="default" class="gap-2">
+                <X class="w-4 h-4" />
+                Clear Search
+              </BaseButton>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="space-y-6">
           <PageCompanyCard
             v-for="company in companies"
             :key="company.id"
@@ -238,7 +331,7 @@ onMounted(() => {
         <!-- All Loaded Message -->
         <div v-else-if="companies.length > 0" class="mt-8 text-center">
           <p class="text-sm text-muted-foreground">
-            All {{ totalCompanies }} companies loaded
+            All {{ totalCompanies }} Contractors loaded
           </p>
         </div>
       </div>
