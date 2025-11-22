@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MapPin, Loader2, AlertCircle, RefreshCw, ChevronDown, Search, X } from 'lucide-vue-next'
+import { MapPin, Loader2, AlertCircle, RefreshCw, ChevronDown, Search, X, CheckCircle } from 'lucide-vue-next'
 import type { ICompany } from '@/types/company'
 import type { ICity } from '@/types/city'
 
@@ -172,12 +172,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="min-h-screen">
     <!-- Loading State -->
     <div v-if="loading" class="py-20">
       <div class="text-center space-y-4">
         <Loader2 class="w-16 h-16 text-accent animate-spin mx-auto" />
-        <p class="text-lg text-muted-foreground">Loading cities...</p>
+        <p class="text-lg text-muted-foreground">Loading contractors...</p>
       </div>
     </div>
 
@@ -186,10 +186,10 @@ onMounted(() => {
       <div class="max-w-md mx-auto space-y-6">
         <AlertCircle class="w-20 h-20 text-destructive mx-auto" />
         <div>
-          <h2 class="text-2xl font-bold mb-2">Failed to load state data</h2>
+          <h2 class="text-2xl font-bold mb-2">Failed to load contractors</h2>
           <p class="text-muted-foreground">{{ error.message }}</p>
         </div>
-        <BaseButton @click="fetchData" variant="outline" size="lg" class="gap-2">
+        <BaseButton @click="fetchData" variant="default" class="gap-2">
           <RefreshCw class="w-5 h-5" />
           Try Again
         </BaseButton>
@@ -197,149 +197,209 @@ onMounted(() => {
     </div>
 
     <!-- Content -->
-    <div>
-      <!-- Header -->
-      <div class="mb-12">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">
-          Sewer Repair Contractors in {{ displayLocationName }}
-        </h1>
-        <p class="text-xl text-muted-foreground">
-          <span v-if="!cities.length" class="text-xl text-muted-foreground">
-            Browse {{ totalCompanies }} verified contractor{{ totalCompanies !== 1 ? 's' : '' }}
-            then, will connecting you with trusted sewer repair professionals.
-          </span>
-          <span v-else class="text-xl text-muted-foreground">
-            Connecting you with trusted sewer repair professionals.
-          </span>
-        </p>
-      </div>
+    <div v-else class="space-y-8">
+      <!-- Hero Header Section -->
+      <BaseCard class="overflow-hidden">
+        <div class="relative bg-gradient-to-br from-accent/10 via-accent/5 to-transparent p-8 md:p-12">
+          <!-- Decorative Background -->
+          <div class="absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full -translate-y-32 translate-x-32 blur-3xl"></div>
 
-      <!-- Cities Grid -->
-      <div class="mb-12" v-if="cities.length > 0">
-        <h2 class="text-2xl font-bold mb-6">Browse by City</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <PageCityCard
+          <div class="relative">
+            <div class="max-w-4xl">
+              <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                Sewer Repair Contractors in {{ displayLocationName }}
+              </h1>
+              <p class="text-xl text-muted-foreground mb-6">
+                Connect with trusted, verified professionals for all your sewer repair needs
+              </p>
+
+              <!-- Stats Bar -->
+              <div class="flex flex-wrap gap-4">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur rounded-xl shadow-sm border border-gray-200">
+                  <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span class="font-semibold">{{ totalCompanies }}</span>
+                  <span class="text-muted-foreground">Verified Contractors</span>
+                </div>
+                <div v-if="cities.length > 0" class="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur rounded-xl shadow-sm border border-gray-200">
+                  <MapPin class="w-4 h-4 text-accent" />
+                  <span class="font-semibold">{{ cities.length }}</span>
+                  <span class="text-muted-foreground">{{ cities.length === 1 ? 'City' : 'Cities' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </BaseCard>
+
+      <!-- Search Section -->
+      <BaseCard class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="bg-accent/10 rounded-lg p-2">
+            <Search class="w-5 h-5 text-accent" />
+          </div>
+          <h2 class="text-xl font-bold">Find Your Perfect Contractor</h2>
+        </div>
+
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search class="w-5 h-5 text-muted-foreground" />
+          </div>
+          <input
+            id="company-search"
+            v-model="searchQuery"
+            @input="handleSearch"
+            type="text"
+            placeholder="Search by contractor name (e.g., 'ABC Plumbing', 'Elite Sewer')..."
+            class="w-full pl-12 pr-12 py-4 border-2 border-gray-200 rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-base"
+          />
+          <div class="absolute inset-y-0 right-0 pr-4 flex items-center gap-2">
+            <Loader2 v-if="isSearching" class="w-5 h-5 text-accent animate-spin" />
+            <button
+              v-if="searchQuery"
+              @click="clearSearch"
+              type="button"
+              class="p-1 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-lg transition-all"
+              aria-label="Clear search"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <p v-if="searchQuery" class="mt-3 text-sm text-muted-foreground flex items-center gap-2">
+          <span class="inline-block w-1 h-1 bg-accent rounded-full animate-pulse"></span>
+          Searching for "<span class="font-semibold text-foreground">{{ searchQuery }}</span>"
+        </p>
+      </BaseCard>
+
+      <!-- Cities Grid Section -->
+      <div v-if="cities.length > 0 && !searchQuery">
+        <BaseCard class="p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="bg-purple-500 rounded-lg p-2">
+              <MapPin class="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold">Browse by City</h2>
+              <p class="text-sm text-muted-foreground">Select a city to view contractors in that area</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <PageCityCard
               v-for="city in sortedCities"
               :key="city.id"
               :city="city"
               :country-slug="countrySlug"
               :state-slug="stateSlug"
-          />
-        </div>
-      </div>
-
-      <!-- Search Bar -->
-      <div class="mb-8">
-        <p v-if="cities.length > 0" class="text-xl text-muted-foreground">
-          Browse {{ totalCompanies }} verified contractor{{ totalCompanies !== 1 ? 's' : '' }}
-          <span v-if="cities.length > 0">across {{ cities.length }} cit{{ cities.length !== 1 ? 'ies' : 'y' }}</span>
-        </p>
-        <div class="mt-6">
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search class="w-5 h-5 text-muted-foreground" />
-            </div>
-            <input
-              id="company-search"
-              v-model="searchQuery"
-              @input="handleSearch"
-              type="text"
-              placeholder="Search by contractor name..."
-              class="w-full pl-10 pr-10 py-3 border border-input rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
             />
-            <div class="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
-              <Loader2 v-if="isSearching" class="w-5 h-5 text-muted-foreground animate-spin" />
-              <button
-                v-if="searchQuery"
-                @click="clearSearch"
-                type="button"
-                class="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
-              >
-                <X class="w-5 h-5" />
-              </button>
+          </div>
+        </BaseCard>
+      </div>
+
+      <!-- No Contractors Message -->
+      <div v-if="!companies.length && !searchQuery && !loading" class="text-center py-20">
+        <BaseCard class="p-12">
+          <div class="max-w-md mx-auto space-y-4">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+              <MapPin class="w-10 h-10 text-gray-400"/>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold mb-2">No Contractors Found</h2>
+              <p class="text-muted-foreground">
+                There are currently no contractors available in {{ displayLocationName }}. Please check back later.
+              </p>
             </div>
           </div>
-          <p v-if="searchQuery" class="mt-2 text-sm text-muted-foreground">
-            Searching for "{{ searchQuery }}"...
-          </p>
-        </div>
+        </BaseCard>
       </div>
 
-      <div v-if="!companies.length && !searchQuery" class="text-center py-20">
-        <div class="max-w-md mx-auto space-y-4">
-          <MapPin class="w-20 h-20 text-muted-foreground/50 mx-auto"/>
-          <div>
-            <h2 class="text-2xl font-bold mb-2">No Contractors Found</h2>
-            <p class="text-muted-foreground">
-              There are currently no contractors available in {{ displayLocationName }}. Please check back later.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Company Cards -->
-      <div class="mb-12">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-2xl font-bold">
-              {{ searchQuery ? 'Search Results' : `All Contractors in ${displayLocationName}` }}
-            </h2>
-            <p v-if="searchQuery && companies.length > 0" class="text-sm text-muted-foreground mt-1">
-              Found {{ totalCompanies }} result{{ totalCompanies !== 1 ? 's' : '' }} for "{{ searchQuery }}"
-            </p>
-          </div>
-          <p class="text-sm text-muted-foreground">
-            Showing {{ loadedCount }} of {{ totalCompanies }} contractors
-          </p>
-        </div>
-
-        <!-- No Results Message -->
-        <div v-if="!loading && companies.length === 0 && searchQuery" class="text-center py-12">
-          <div class="max-w-md mx-auto space-y-4">
-            <Search class="w-16 h-16 text-muted-foreground/50 mx-auto" />
+      <!-- Company Cards Section -->
+      <div v-if="companies.length > 0 || searchQuery">
+        <BaseCard class="p-6">
+          <!-- Section Header -->
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 pb-6 border-b">
             <div>
-              <h3 class="text-xl font-semibold mb-2">No Results Found</h3>
-              <p class="text-muted-foreground mb-4">
-                We couldn't find any contractors matching "{{ searchQuery }}" in {{ displayLocationName }}.
+              <h2 class="text-2xl font-bold mb-1">
+                {{ searchQuery ? 'Search Results' : 'Available Contractors' }}
+              </h2>
+              <p v-if="searchQuery && companies.length > 0" class="text-sm text-muted-foreground">
+                Found <span class="font-semibold text-accent">{{ totalCompanies }}</span> result{{ totalCompanies !== 1 ? 's' : '' }} for "{{ searchQuery }}"
               </p>
-              <BaseButton @click="clearSearch" variant="outline" size="default" class="gap-2">
-                <X class="w-4 h-4" />
-                Clear Search
+              <p v-else class="text-sm text-muted-foreground">
+                Showing {{ loadedCount }} of {{ totalCompanies }} contractors in {{ displayLocationName }}
+              </p>
+            </div>
+
+            <!-- Results Counter -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-lg">
+              <div class="w-2 h-2 bg-accent rounded-full"></div>
+              <span class="text-sm font-medium">
+                {{ loadedCount }} / {{ totalCompanies }}
+              </span>
+            </div>
+          </div>
+
+          <!-- No Search Results -->
+          <div v-if="!loading && companies.length === 0 && searchQuery" class="text-center py-16">
+            <div class="max-w-md mx-auto space-y-6">
+              <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                <Search class="w-10 h-10 text-gray-400" />
+              </div>
+              <div>
+                <h3 class="text-2xl font-bold mb-2">No Results Found</h3>
+                <p class="text-muted-foreground mb-6">
+                  We couldn't find any contractors matching "<span class="font-semibold text-foreground">{{ searchQuery }}</span>" in {{ displayLocationName }}.
+                </p>
+                <BaseButton @click="clearSearch" variant="default" size="lg" class="gap-2">
+                  <X class="w-4 h-4" />
+                  Clear Search
+                </BaseButton>
+              </div>
+            </div>
+          </div>
+
+          <!-- Company Cards Grid -->
+          <div v-else class="space-y-4">
+            <PageCompanyCard
+              v-for="company in companies"
+              :key="company.id"
+              :company="company"
+            />
+          </div>
+
+          <!-- Load More Section -->
+          <div v-if="hasMorePages" class="mt-8 pt-8 border-t">
+            <div class="text-center space-y-4">
+              <p class="text-sm text-muted-foreground">
+                <span class="font-semibold text-foreground">{{ remainingCount }}</span> more contractor{{ remainingCount !== 1 ? 's' : '' }} available
+              </p>
+              <BaseButton
+                @click="loadMore"
+                :disabled="loadingMore"
+                variant="outline"
+                size="lg"
+                class="gap-2 min-w-[250px] group"
+              >
+                <Loader2 v-if="loadingMore" class="w-5 h-5 animate-spin" />
+                <ChevronDown v-else class="w-5 h-5 group-hover:translate-y-1 transition-transform" />
+                {{ loadingMore ? 'Loading More...' : `Load More Contractors` }}
               </BaseButton>
             </div>
           </div>
-        </div>
 
-        <div v-else class="space-y-6">
-          <PageCompanyCard
-            v-for="company in companies"
-            :key="company.id"
-            :company="company"
-          />
-        </div>
-
-        <!-- Load More Button -->
-        <div v-if="hasMorePages" class="mt-8 text-center">
-          <BaseButton
-            @click="loadMore"
-            :disabled="loadingMore"
-            variant="outline"
-            size="lg"
-            class="gap-2 min-w-[200px]"
-          >
-            <Loader2 v-if="loadingMore" class="w-5 h-5 animate-spin" />
-            <ChevronDown v-else class="w-5 h-5" />
-            {{ loadingMore ? 'Loading...' : `Load More (${remainingCount} remaining)` }}
-          </BaseButton>
-        </div>
-
-        <!-- All Loaded Message -->
-        <div v-else-if="companies.length > 0" class="mt-8 text-center">
-          <p class="text-sm text-muted-foreground">
-            All {{ totalCompanies }} Contractors loaded
-          </p>
-        </div>
+          <!-- All Loaded Message -->
+          <div v-else-if="companies.length > 0 && !searchQuery" class="mt-8 pt-8 border-t">
+            <div class="text-center">
+              <div class="inline-flex items-center gap-2 px-6 py-3 bg-green-50 border-2 border-green-200 rounded-xl">
+                <CheckCircle class="w-5 h-5 text-green-600" />
+                <span class="font-medium text-green-900">
+                  All {{ totalCompanies }} contractors loaded
+                </span>
+              </div>
+            </div>
+          </div>
+        </BaseCard>
       </div>
     </div>
   </div>
