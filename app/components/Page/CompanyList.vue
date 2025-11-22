@@ -266,13 +266,13 @@ onMounted(() => {
         </div>
       </div>
 
-      <div v-if="!companies.length" class="text-center py-20">
+      <div v-if="!companies.length && !searchQuery" class="text-center py-20">
         <div class="max-w-md mx-auto space-y-4">
           <MapPin class="w-20 h-20 text-muted-foreground/50 mx-auto"/>
           <div>
             <h2 class="text-2xl font-bold mb-2">No Contractors Found</h2>
             <p class="text-muted-foreground">
-              There are currently no companies available in {{ displayLocationName }}. Please check back later.
+              There are currently no contractors available in {{ displayLocationName }}. Please check back later.
             </p>
           </div>
         </div>
