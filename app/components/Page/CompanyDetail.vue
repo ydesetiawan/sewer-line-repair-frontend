@@ -169,47 +169,6 @@ const starRating = computed(() => {
 })
 
 /**
- * Parse time string to minutes (e.g., "8:00 AM" => 480)
- */
-const parseTimeToMinutes = (timeStr: string): number => {
-  const [time, period] = timeStr.split(' ')
-  const [hours, minutes] = time.split(':').map(Number)
-
-  let totalHours = hours
-  if (period === 'PM' && hours !== 12) {
-    totalHours += 12
-  } else if (period === 'AM' && hours === 12) {
-    totalHours = 0
-  }
-
-  return totalHours * 60 + minutes
-}
-
-/**
- * Check if currently open based on working hours
- */
-const isCurrentlyOpen = computed(() => {
-  if (!company.value?.attributes.working_hours) return false
-
-  const now = new Date()
-  const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' })
-  const currentTime = now.getHours() * 60 + now.getMinutes()
-
-  const todayHours = company.value.attributes.working_hours[currentDay]
-
-  if (!todayHours || todayHours.toLowerCase() === 'closed') {
-    return false
-  }
-
-  // Parse hours like "8:00 AM - 5:00 PM"
-  const [openTime, closeTime] = todayHours.split(' - ')
-  const openMinutes = parseTimeToMinutes(openTime)
-  const closeMinutes = parseTimeToMinutes(closeTime)
-
-  return currentTime >= openMinutes && currentTime < closeMinutes
-})
-
-/**
  * Format working hours for display with today highlight
  */
 const formattedWorkingHours = computed<IFormattedSchedule[]>(() => {
@@ -294,11 +253,6 @@ onMounted(() => {
               <MapPin class="w-4 h-4 mr-2" />
               <span>{{ company.attributes.full_address }}</span>
             </div>
-
-            <!-- Service Area -->
-            <p class="text-sm text-muted-foreground">
-              <span class="font-medium">Serving:</span> {{ company.attributes.full_address }}
-            </p>
           </div>
 
           <!-- Trust Badges -->
@@ -364,14 +318,6 @@ onMounted(() => {
         <BaseCard class="p-6">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-2xl font-bold">Business Hours</h2>
-            <div v-if="isCurrentlyOpen" class="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-full">
-              <Clock class="w-4 h-4" />
-              <span class="text-sm font-semibold">Open Now</span>
-            </div>
-            <div v-else class="flex items-center gap-2 text-destructive bg-destructive/10 px-3 py-1 rounded-full">
-              <Clock class="w-4 h-4" />
-              <span class="text-sm font-semibold">Closed</span>
-            </div>
           </div>
           <div class="space-y-3">
             <div
