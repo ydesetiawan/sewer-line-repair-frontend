@@ -28,6 +28,13 @@ export interface IWorkingHours {
   Sunday: string
 }
 
+export interface IFormattedSchedule {
+  day: string
+  hours: string
+  isClosed: boolean
+  isToday: boolean
+}
+
 export interface ICompanyDetailAttributes {
   name: string
   slug: string
