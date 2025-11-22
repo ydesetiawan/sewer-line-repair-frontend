@@ -231,57 +231,63 @@ onMounted(() => {
         </div>
       </BaseCard>
 
-      <!-- Search Section -->
+      <!-- Search Section - Clean & Modern -->
       <BaseCard class="p-6">
         <div class="flex items-center gap-3 mb-4">
-          <div class="bg-accent/10 rounded-lg p-2">
-            <Search class="w-5 h-5 text-accent" />
+          <div class="w-10 h-10 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center">
+            <Search class="w-5 h-5 text-blue-600" />
           </div>
-          <h2 class="text-xl font-bold">Find Your Perfect Contractor</h2>
+          <h2 class="text-xl font-bold text-gray-900">Find Your Perfect Contractor</h2>
         </div>
 
         <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search class="w-5 h-5 text-muted-foreground" />
-          </div>
           <input
             id="company-search"
             v-model="searchQuery"
             @input="handleSearch"
             type="text"
             placeholder="Search by contractor name (e.g., 'ABC Plumbing', 'Elite Sewer')..."
-            class="w-full pl-12 pr-12 py-4 border-2 border-gray-200 rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-base"
+            class="w-full pl-12 pr-12 h-14 text-base bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 outline-none"
           />
-          <div class="absolute inset-y-0 right-0 pr-4 flex items-center gap-2">
-            <Loader2 v-if="isSearching" class="w-5 h-5 text-accent animate-spin" />
+          <div class="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <div class="w-8 h-8 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center">
+              <Search class="w-4 h-4 text-blue-600" />
+            </div>
+          </div>
+          <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+            <Loader2 v-if="isSearching" class="w-5 h-5 text-blue-600 animate-spin" />
             <button
               v-if="searchQuery"
               @click="clearSearch"
               type="button"
-              class="p-1 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-lg transition-all"
+              class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-all duration-200"
               aria-label="Clear search"
             >
-              <X class="w-5 h-5" />
+              <X class="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        <p v-if="searchQuery" class="mt-3 text-sm text-muted-foreground flex items-center gap-2">
-          <span class="inline-block w-1 h-1 bg-accent rounded-full animate-pulse"></span>
-          Searching for "<span class="font-semibold text-foreground">{{ searchQuery }}</span>"
-        </p>
+        <div v-if="searchQuery" class="flex items-center gap-3 mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow-sm">
+            <Search class="w-5 h-5 text-white" />
+          </div>
+          <p class="text-sm font-medium text-gray-900">
+            Searching for "<span class="font-semibold text-blue-600">{{ searchQuery }}</span>"
+          </p>
+        </div>
       </BaseCard>
 
       <!-- Cities Grid Section -->
       <div v-if="cities.length > 0 && !searchQuery">
         <BaseCard class="p-6">
           <div class="flex items-center gap-3 mb-6">
-            <div class="bg-purple-500 rounded-lg p-2">
+            <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow-sm">
               <MapPin class="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 class="text-2xl font-bold">Browse by City</h2>
-              <p class="text-sm text-muted-foreground">Select a city to view contractors in that area</p>
+              <h2 class="text-2xl font-bold text-gray-900">Browse by City</h2>
+              <p class="text-sm text-gray-600">Select a city to view contractors in that area</p>
             </div>
           </div>
 
