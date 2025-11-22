@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Loader2, AlertCircle, RefreshCw, Phone, Mail, Globe, MapPin, Clock, Star, Shield, Award, CheckCircle, MessageSquare, Briefcase } from 'lucide-vue-next'
+import { Loader2, AlertCircle, RefreshCw, Phone, Mail, Globe, MapPin, Clock, Star, Shield, Award, CheckCircle, MessageSquare } from 'lucide-vue-next'
 import type { ICompanyDetail, IFormattedSchedule } from '@/types/company-detail'
 
 interface Props {
@@ -55,20 +55,20 @@ const formattedRating = computed(() => {
 })
 
 /**
- * Service level configuration
+ * Get service level badge color
  */
-const serviceLevelConfig = computed(() => {
-  if (!company.value) return { color: 'bg-gray-100 text-gray-800', icon: Award }
+const serviceLevelClass = computed(() => {
+  if (!company.value) return 'bg-gray-100 text-gray-800'
 
   const level = company.value.attributes.service_level
-  const configs: Record<string, { color: string; icon: any }> = {
-    Basic: { color: 'bg-gray-100 text-gray-800', icon: Award },
-    Standard: { color: 'bg-blue-100 text-blue-800', icon: Award },
-    Premium: { color: 'bg-purple-100 text-purple-800', icon: Award },
-    Elite: { color: 'bg-amber-100 text-amber-800', icon: Award }
+  const classes: Record<string, string> = {
+    Basic: 'bg-gray-100 text-gray-800',
+    Standard: 'bg-blue-100 text-blue-800',
+    Premium: 'bg-purple-100 text-purple-800',
+    Elite: 'bg-amber-100 text-amber-800'
   }
 
-  return configs[level] || configs.Basic
+  return classes[level] || classes.Basic
 })
 
 /**
@@ -98,9 +98,28 @@ const isCurrentlyOpen = computed(() => {
   if (!todayHours || todayHours.toLowerCase() === 'closed') return false
 
   try {
-    const [start, end] = todayHours.split(' - ')
-    const [startHour, startMin] = start.match(/(\d+):(\d+)/)?.slice(1).map(Number) || [0, 0]
-    const [endHour, endMin] = end.match(/(\d+):(\d+)/)?.slice(1).map(Number) || [0, 0]
+    const parts = todayHours.split(' - ')
+    const start = parts[0]
+    const end = parts[1]
+
+    if (!start || !end) return false
+
+    const startMatch = start.match(/(\d+):(\d+)/)
+    const endMatch = end.match(/(\d+):(\d+)/)
+
+    if (!startMatch || !endMatch) return false
+
+    const startHourStr = startMatch[1]
+    const startMinStr = startMatch[2]
+    const endHourStr = endMatch[1]
+    const endMinStr = endMatch[2]
+
+    if (!startHourStr || !startMinStr || !endHourStr || !endMinStr) return false
+
+    const startHour = Number(startHourStr)
+    const startMin = Number(startMinStr)
+    const endHour = Number(endHourStr)
+    const endMin = Number(endMinStr)
 
     const startTime = (start.includes('PM') && startHour !== 12 ? startHour + 12 : startHour) * 60 + startMin
     const endTime = (end.includes('PM') && endHour !== 12 ? endHour + 12 : endHour) * 60 + endMin
@@ -215,10 +234,10 @@ onMounted(() => {
                 <div class="flex items-center gap-3 mb-3">
                   <h1 class="text-4xl font-bold">{{ company.attributes.name }}</h1>
                   <span
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold"
-                    :class="serviceLevelConfig.color"
+                    class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold"
+                    :class="serviceLevelClass"
                   >
-                    <component :is="serviceLevelConfig.icon" class="w-3 h-3 mr-1" />
+                    <Award class="w-3.5 h-3.5 mr-1" />
                     {{ company.attributes.service_level }}
                   </span>
                 </div>
@@ -247,36 +266,34 @@ onMounted(() => {
                     <MapPin class="w-4 h-4 mt-0.5 flex-shrink-0" />
                     <span class="text-sm">{{ company.attributes.full_address }}</span>
                   </div>
-                  <div class="flex items-center gap-2 text-muted-foreground">
-                    <Briefcase class="w-4 h-4 flex-shrink-0" />
-                    <span class="text-sm font-medium">{{ company.attributes.specialty }}</span>
-                  </div>
+<!--                  <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/50 rounded-full border border-gray-200">-->
+<!--                    <div class="w-1.5 h-1.5 bg-accent rounded-full"></div>-->
+<!--                    <span class="text-sm font-medium text-gray-700">{{ company.attributes.specialty }}</span>-->
+<!--                  </div>-->
                 </div>
               </div>
 
               <!-- Status Badge -->
               <div class="flex-shrink-0">
                 <div
-                  class="inline-flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg"
+                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full shadow-sm font-semibold text-sm"
                   :class="isCurrentlyOpen ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'"
                 >
-                  <div class="relative">
-                    <div
-                      class="w-2 h-2 rounded-full"
-                      :class="isCurrentlyOpen ? 'bg-white animate-pulse' : 'bg-white/70'"
-                    ></div>
-                  </div>
-                  <span class="font-bold text-sm">{{ isCurrentlyOpen ? 'OPEN NOW' : 'CLOSED' }}</span>
+                  <div
+                    class="w-2 h-2 rounded-full bg-white"
+                    :class="isCurrentlyOpen ? 'animate-pulse' : 'opacity-70'"
+                  ></div>
+                  {{ isCurrentlyOpen ? 'Open Now' : 'Closed' }}
                 </div>
               </div>
             </div>
 
-            <!-- Certifications Badges -->
+            <!-- Certification Badges -->
             <div class="flex flex-wrap gap-2">
               <span
                 v-for="cert in certifications"
                 :key="cert.label"
-                class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-white/80 backdrop-blur shadow-sm border border-gray-200"
+                class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white shadow-sm border border-gray-200"
               >
                 <component :is="cert.icon" class="w-3.5 h-3.5 mr-1.5 text-green-600" />
                 {{ cert.label }}

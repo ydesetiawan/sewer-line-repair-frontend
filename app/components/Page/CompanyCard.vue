@@ -20,12 +20,12 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Service level badge colors - Google-style minimalist
+// Service level badge colors - matching CompanyDetail style
 const serviceLevelStyles: Record<ServiceLevel, string> = {
-  Basic: 'bg-gray-50 text-gray-700 border-gray-200',
-  Standard: 'bg-blue-50 text-blue-700 border-blue-200',
-  Premium: 'bg-purple-50 text-purple-700 border-purple-200',
-  Elite: 'bg-amber-50 text-amber-700 border-amber-200',
+  Basic: 'bg-gray-100 text-gray-800',
+  Standard: 'bg-blue-100 text-blue-800',
+  Premium: 'bg-purple-100 text-purple-800',
+  Elite: 'bg-amber-100 text-amber-800',
 }
 
 // Format rating
@@ -35,12 +35,12 @@ const rating = computed(() => parseFloat(props.company.attributes.average_rating
 const trustBadges = computed(() => {
   const attrs = props.company.attributes
   return [
-    { show: attrs.verified_professional, label: 'Verified Professional', icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50' },
-    { show: attrs.licensed, label: 'Licensed & Certified', icon: Award, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-    { show: attrs.insured, label: 'Fully Insured', icon: Shield, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-    { show: attrs.background_checked, label: 'Background Checked', icon: ShieldCheck, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
-    { show: attrs.certified_partner, label: 'Certified Partner', icon: Star, color: 'text-amber-600', bgColor: 'bg-amber-50' },
-    { show: attrs.service_guarantee, label: 'Service Guarantee', icon: BadgeCheck, color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
+    { show: attrs.verified_professional, label: 'Verified Professional', icon: CheckCircle },
+    { show: attrs.licensed, label: 'Licensed & Certified', icon: Award },
+    { show: attrs.insured, label: 'Fully Insured', icon: Shield },
+    { show: attrs.background_checked, label: 'Background Checked', icon: ShieldCheck },
+    { show: attrs.certified_partner, label: 'Certified Partner', icon: Star },
+    { show: attrs.service_guarantee, label: 'Service Guarantee', icon: BadgeCheck },
   ].filter(badge => badge.show)
 })
 
@@ -79,7 +79,7 @@ const truncatedDescription = computed(() => {
 
           <!-- Service Level Badge -->
           <span
-            class="px-2.5 py-0.5 text-xs font-medium rounded border shrink-0"
+            class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full shrink-0"
             :class="serviceLevelStyles[company.attributes.service_level]"
             :aria-label="`Service level: ${company.attributes.service_level}`"
           >
@@ -113,16 +113,15 @@ const truncatedDescription = computed(() => {
           <span>{{ company.attributes.full_address }}</span>
         </div>
 
-        <!-- Trust Badges - Horizontal on desktop -->
+        <!-- Trust Badges -->
         <div v-if="trustBadges.length > 0" class="flex flex-wrap items-center gap-2 mb-3">
           <span
             v-for="badge in trustBadges"
             :key="badge.label"
-            class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border transition-colors"
-            :class="`${badge.bgColor} ${badge.color} border-current/20`"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-white shadow-sm border border-gray-200"
             :title="badge.label"
           >
-            <component :is="badge.icon" class="w-3.5 h-3.5" aria-hidden="true" />
+            <component :is="badge.icon" class="w-3.5 h-3.5 text-green-600" aria-hidden="true" />
             <span class="hidden sm:inline">{{ badge.label }}</span>
           </span>
         </div>
