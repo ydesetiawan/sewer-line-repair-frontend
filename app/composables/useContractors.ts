@@ -627,5 +627,5 @@ export function getContractorById(id: string): Contractor | undefined {
 }
 
 export function getCountry(countrySlug: string): string | null {
-    return countrySlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    return formatSlugToTitle(countrySlug)
 }

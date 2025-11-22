@@ -13,25 +13,19 @@ const route = useRoute()
 const countrySlug = route.params.country as string
 
 // Format country name from slug
-const country = countrySlug?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
+const country = formatSlugToTitle(countrySlug)
+
+// Breadcrumb items
+const breadcrumbItems = computed(() => [
+  { label: 'Home', to: '/' },
+  { label: country, to: `/${countrySlug}` }
+])
 </script>
 
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- Breadcrumb -->
-    <nav class="mb-8 text-sm text-muted-foreground">
-      <ol class="flex items-center gap-2">
-        <li><NuxtLink to="/" class="hover:text-foreground">Home</NuxtLink></li>
-        <template v-if="countrySlug">
-          <li>/</li>
-          <li>
-            <NuxtLink :to="`/${countrySlug}`" class="hover:text-foreground">
-              {{ country }}
-            </NuxtLink>
-          </li>
-        </template>
-      </ol>
-    </nav>
+    <BaseBreadcrumb :items="breadcrumbItems" />
 
     <!-- Header -->
     <div class="mb-8">
