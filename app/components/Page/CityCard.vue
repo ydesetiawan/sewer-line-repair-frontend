@@ -35,26 +35,15 @@ const contractorLabel = computed(() => {
       <!-- Card Content -->
       <div class="relative p-5">
         <!-- Icon -->
-        <div class="mb-3">
+        <div class="flex mb-3">
           <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 group-hover:bg-blue-500 group-hover:border-blue-500 group-hover:scale-110 transition-all duration-300">
             <MapPin class="w-5 h-5 text-blue-600 group-hover:text-white transition-colors duration-300" />
           </div>
-        </div>
-
-        <!-- City Name -->
-        <div class="mb-3">
-          <h3 class="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 mb-2 line-clamp-1">
-            {{ city.attributes.name }}
-          </h3>
-
-          <!-- Location Badge -->
-          <div class="flex flex-wrap gap-1.5">
-            <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-gray-50 border border-gray-200 rounded-full text-gray-700 group-hover:bg-blue-50 group-hover:border-blue-200 group-hover:text-blue-700 transition-all duration-200">
-              {{ city.attributes.state.name }}
-            </span>
-            <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-gray-50 border border-gray-200 rounded-full text-gray-700 group-hover:bg-blue-50 group-hover:border-blue-200 group-hover:text-blue-700 transition-all duration-200">
-              {{ city.attributes.country.code }}
-            </span>
+          <!-- City Name -->
+          <div class="ml-4 flex items-center">
+            <h3 class="flex items-center text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 mb-2 line-clamp-1">
+              {{ city.attributes.name }}
+            </h3>
           </div>
         </div>
 
