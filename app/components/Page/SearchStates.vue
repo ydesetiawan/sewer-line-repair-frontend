@@ -135,117 +135,176 @@ onUnmounted(() => {
 
 <template>
   <div class="space-y-6">
-    <!-- Search Input -->
+    <!-- Search Input - Clean & Modern -->
     <div class="relative">
-      <BaseInput
-        :model-value="searchQuery"
-        type="text"
-        placeholder="Search states by name..."
-        class="bg-card border-border pl-10 pr-10 text-foreground"
-        aria-label="Search states"
-        @input="handleSearch"
-      />
-      <Search
-        class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
-      />
-      <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
-        <Loader2
-          v-if="loading"
-          class="w-4 h-4 text-muted-foreground animate-spin"
+      <div class="relative">
+        <BaseInput
+          :model-value="searchQuery"
+          type="text"
+          placeholder="Search states by name..."
+          class="pl-12 pr-12 h-14 text-base bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+          aria-label="Search states"
+          @input="handleSearch"
         />
-        <button
-          v-else-if="searchQuery"
-          type="button"
-          class="text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Clear search"
-          @click="handleClearSearch"
-        >
-          <X class="w-4 h-4" />
-        </button>
+        <div class="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+          <div class="w-8 h-8 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center">
+            <Search class="w-4 h-4 text-blue-600" />
+          </div>
+        </div>
+        <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+          <Loader2
+            v-if="loading"
+            class="w-5 h-5 text-blue-600 animate-spin"
+          />
+          <button
+            v-else-if="searchQuery"
+            type="button"
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-all duration-200"
+            aria-label="Clear search"
+            @click="handleClearSearch"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Search Results Info -->
-    <div v-if="searchQuery && !loading">
-      <p class="text-sm text-muted-foreground">
+    <!-- Search Results Info - Clean Design -->
+    <div v-if="searchQuery && !loading" class="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+      <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow-sm">
+        <Search class="w-5 h-5 text-white" />
+      </div>
+      <div class="flex-1">
         <template v-if="hasResults">
-          Found <span class="text-accent font-bold">{{ totalResults }}</span> state{{ totalResults !== 1 ? 's' : '' }}
-          matching "<span class="font-medium">{{ searchQuery }}</span>"
+          <p class="text-sm font-medium text-gray-900">
+            Found <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold bg-blue-600 text-white shadow-sm">{{ totalResults }}</span>
+            state{{ totalResults !== 1 ? 's' : '' }} matching "<span class="font-semibold text-blue-600">{{ searchQuery }}</span>"
+          </p>
         </template>
         <template v-else>
-          No states found matching "<span class="font-medium">{{ searchQuery }}</span>"
+          <p class="text-sm font-medium text-gray-900">
+            No states found matching "<span class="font-semibold text-blue-600">{{ searchQuery }}</span>"
+          </p>
+          <p class="text-xs text-gray-600 mt-0.5">Try a different search term</p>
         </template>
-      </p>
-    </div>
-
-    <!-- All States Count (when no search) -->
-    <div v-else-if="!searchQuery && !loading && hasResults">
-      <p class="text-sm text-muted-foreground">
-        Showing <span class="text-accent font-bold">{{ totalResults }}</span> state{{ totalResults !== 1 ? 's' : '' }}
-      </p>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="loading && !states.length" class="flex justify-center items-center py-20">
-      <div class="text-center space-y-4">
-        <Loader2 class="w-16 h-16 text-accent animate-spin mx-auto" />
-        <p class="text-lg text-muted-foreground">Loading states...</p>
       </div>
     </div>
 
-    <!-- 404 Not Found State -->
+    <!-- All States Count (when no search) - Clean Design -->
+    <div v-else-if="!searchQuery && !loading && hasResults" class="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+      <div class="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center shadow-sm">
+        <MapPin class="w-5 h-5 text-white" />
+      </div>
+      <p class="text-sm font-medium text-gray-900">
+        Showing <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold bg-gray-700 text-white shadow-sm">{{ totalResults }}</span>
+        state{{ totalResults !== 1 ? 's' : '' }} available
+      </p>
+    </div>
+
+    <!-- Loading State - Clean Design -->
+    <div v-if="loading && !states.length" class="flex justify-center items-center py-20">
+      <div class="text-center space-y-4">
+        <div class="relative inline-block">
+          <div class="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
+          <Loader2 class="relative w-16 h-16 text-blue-600 animate-spin" />
+        </div>
+        <div>
+          <p class="text-lg font-bold text-gray-900">Loading states...</p>
+          <p class="text-sm text-gray-500 mt-1">Please wait a moment</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 404 Not Found State - Clean Design -->
     <div v-else-if="error && 'statusCode' in error && (error as any).statusCode === 404" class="text-center py-20">
       <div class="max-w-md mx-auto space-y-6">
-        <MapPin class="w-20 h-20 text-muted-foreground/50 mx-auto" />
+        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+          <MapPin class="w-10 h-10 text-gray-400" />
+        </div>
         <div>
-          <h2 class="text-2xl font-bold mb-2">No States Found</h2>
-          <p class="text-muted-foreground">
+          <h2 class="text-2xl font-bold mb-2 text-gray-900">No States Found</h2>
+          <p class="text-gray-600">
             No states were found for the selected country. Please try a different search.
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Other Error State -->
+    <!-- Other Error State - Clean Design -->
     <div v-else-if="error" class="text-center py-20">
       <div class="max-w-md mx-auto space-y-6">
-        <AlertCircle class="w-20 h-20 text-destructive mx-auto" />
-        <div>
-          <h2 class="text-2xl font-bold mb-2">Failed to load states</h2>
-          <p class="text-muted-foreground">{{ error.message }}</p>
+        <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+          <AlertCircle class="w-10 h-10 text-red-600" />
         </div>
-        <BaseButton @click="refresh" variant="outline" size="lg" class="gap-2">
+        <div>
+          <h2 class="text-2xl font-bold mb-2 text-gray-900">Failed to load states</h2>
+          <p class="text-gray-600">{{ error.message }}</p>
+        </div>
+        <BaseButton @click="refresh" variant="outline" size="lg" class="gap-2 border-2 border-blue-500 text-blue-600 hover:bg-blue-50">
           <RefreshCw class="w-5 h-5" />
           Try Again
         </BaseButton>
       </div>
     </div>
 
-    <!-- States Grid -->
+    <!-- States Grid - Beautiful & Clean Design -->
     <div v-else-if="states.length > 0">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <NuxtLink
           v-for="state in states"
           :key="state.id"
           :to="getStateRoute(state)"
+          class="group"
         >
           <BaseCard
-            class="p-6 bg-card hover:bg-card/80 border-border/50 cursor-pointer transition-all hover:shadow-lg hover:border-accent/50"
+            class="relative h-full overflow-hidden bg-white border border-gray-200 hover:border-blue-400 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
           >
-            <div class="flex items-center gap-3">
-              <div class="p-2 bg-accent/10 rounded-lg">
-                <MapPin class="w-5 h-5 text-accent" />
+            <!-- Subtle top accent line -->
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-600 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+
+            <!-- Card Content -->
+            <div class="relative p-6">
+              <!-- Icon -->
+              <div class="mb-4">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 group-hover:bg-blue-500 group-hover:border-blue-500 group-hover:scale-110 transition-all duration-300">
+                  <MapPin class="w-6 h-6 text-blue-600 group-hover:text-white transition-colors duration-300" />
+                </div>
               </div>
-              <div class="flex-1 min-w-0">
-                <h3 class="font-medium group-hover:text-accent transition-colors block truncate">
+
+              <!-- State Name -->
+              <div class="mb-4">
+                <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 mb-2 line-clamp-1">
                   {{ state.attributes.name }}
-                  <span class="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full font-mono">
-                    {{ state.attributes.country.name }}
-                  </span>
                 </h3>
-                <p class="text-sm text-muted-foreground">
-                  <span class="text-accent">{{ state.attributes.companies_count }}</span> contractors available
-                </p>
+
+                <!-- Country Badge -->
+                <span class="inline-flex items-center px-3 py-1 text-xs font-medium bg-gray-50 border border-gray-200 rounded-full text-gray-700 group-hover:bg-blue-50 group-hover:border-blue-200 group-hover:text-blue-700 transition-all duration-200">
+                  {{ state.attributes.country.name }}
+                </span>
+              </div>
+
+              <!-- Contractors Count -->
+              <div class="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
+                <div class="flex items-center gap-2">
+                  <span class="text-3xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                    {{ state.attributes.companies_count }}
+                  </span>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs font-medium text-gray-500 group-hover:text-gray-700 transition-colors">
+                    {{ state.attributes.companies_count === 1 ? 'Contractor' : 'Contractors' }}
+                  </p>
+                  <p class="text-xs text-gray-400">Available</p>
+                </div>
+              </div>
+
+              <!-- Hover Arrow Indicator -->
+              <div class="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-lg transform group-hover:translate-x-1 transition-transform duration-300">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </div>
               </div>
             </div>
           </BaseCard>
@@ -253,13 +312,15 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Empty State -->
+    <!-- Empty State - Clean Design -->
     <div v-else class="text-center py-20">
-      <div class="max-w-md mx-auto space-y-4">
-        <MapPin class="w-20 h-20 text-muted-foreground/50 mx-auto" />
+      <div class="max-w-md mx-auto space-y-6">
+        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+          <MapPin class="w-10 h-10 text-gray-400" />
+        </div>
         <div>
-          <h2 class="text-2xl font-bold mb-2">No States Available</h2>
-          <p class="text-muted-foreground">
+          <h2 class="text-2xl font-bold mb-2 text-gray-900">No States Available</h2>
+          <p class="text-gray-600">
             There are currently no states in the directory. Please check back later.
           </p>
         </div>
