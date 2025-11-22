@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { MapPin, Loader2, AlertCircle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import { useCompanies } from '@/composables/useCompaniesApi'
 
 definePageMeta({
   layout: 'default',
