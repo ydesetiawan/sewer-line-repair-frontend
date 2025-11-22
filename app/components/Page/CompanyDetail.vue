@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Loader2, AlertCircle, RefreshCw, Phone, Mail, Globe, MapPin, Clock, Star, Shield, Award, CheckCircle, MessageSquare } from 'lucide-vue-next'
+import { Loader2, AlertCircle, RefreshCw, Phone, Mail, Globe, MapPin, Clock, Star, Shield, Award, CheckCircle, MessageSquare, Briefcase } from 'lucide-vue-next'
 import type { ICompanyDetail, IFormattedSchedule } from '@/types/company-detail'
 
 interface Props {
@@ -17,21 +17,14 @@ const { $publicApi } = useNuxtApp()
 
 /**
  * Fetch company details from API
- * Uses company slug to get company ID from URL or lookup
  */
 const fetchCompanyDetail = async () => {
   loading.value = true
   error.value = null
 
   try {
-    // Extract company ID from slug or make API call to get company by slug
-    // For now, assuming the slug contains ID at the end (e.g., "company-name-123")
     const companyId = extractIdFromSlug(props.companySlug)
-
-    const response = await ($publicApi as any)(
-      `/api/v1/companies/${companyId}`
-    )
-
+    const response = await ($publicApi as any)(`/api/v1/companies/${companyId}`)
     company.value = response.data
   } catch (err) {
     error.value = err instanceof Error ? err : new Error('Failed to fetch company details')
@@ -43,23 +36,18 @@ const fetchCompanyDetail = async () => {
 
 /**
  * Extract company ID from slug
- * Assumes format: "company-name-123" where 123 is the ID
  */
 const extractIdFromSlug = (slug: string): string => {
   const parts = slug.split('-')
   const lastPart = parts[parts.length - 1]
-
-  // Check if last part exists and is a number
   if (lastPart && /^\d+$/.test(lastPart)) {
     return lastPart
   }
-
-  // If no ID found, return slug as is (API should handle)
   return slug
 }
 
 /**
- * Format average rating to 1 decimal place
+ * Format average rating
  */
 const formattedRating = computed(() => {
   if (!company.value) return '0.0'
@@ -67,20 +55,20 @@ const formattedRating = computed(() => {
 })
 
 /**
- * Get service level badge color class
+ * Service level configuration
  */
-const serviceLevelColorClass = computed(() => {
-  if (!company.value) return 'bg-muted text-muted-foreground'
+const serviceLevelConfig = computed(() => {
+  if (!company.value) return { color: 'bg-gray-100 text-gray-800', icon: Award }
 
   const level = company.value.attributes.service_level
-  const colors: Record<string, string> = {
-    Basic: 'bg-muted text-muted-foreground',
-    Standard: 'bg-accent/10 text-accent',
-    Premium: 'bg-purple-100 text-purple-800',
-    Elite: 'bg-amber-100 text-amber-800'
+  const configs: Record<string, { color: string; icon: any }> = {
+    Basic: { color: 'bg-gray-100 text-gray-800', icon: Award },
+    Standard: { color: 'bg-blue-100 text-blue-800', icon: Award },
+    Premium: { color: 'bg-purple-100 text-purple-800', icon: Award },
+    Elite: { color: 'bg-amber-100 text-amber-800', icon: Award }
   }
 
-  return colors[level] || colors.Basic
+  return configs[level] || configs.Basic
 })
 
 /**
@@ -96,58 +84,31 @@ const getWebsiteDomain = (url: string): string => {
 }
 
 /**
- * Company trust badges with color classes
+ * Check if currently open
  */
-const trustBadges = computed(() => {
-  if (!company.value) return []
+const isCurrentlyOpen = computed(() => {
+  if (!company.value?.attributes.working_hours) return false
 
-  const attrs = company.value.attributes
-  const badges = []
+  const now = new Date()
+  const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' })
+  const currentTime = now.getHours() * 60 + now.getMinutes()
 
-  if (attrs.verified_professional) {
-    badges.push({
-      label: 'Verified Professional',
-      icon: CheckCircle,
-      colorClass: 'bg-accent/10 text-accent'
-    })
-  }
-  if (attrs.licensed) {
-    badges.push({
-      label: 'Licensed',
-      icon: Shield,
-      colorClass: 'bg-green-100 text-green-800'
-    })
-  }
-  if (attrs.insured) {
-    badges.push({
-      label: 'Insured',
-      icon: Shield,
-      colorClass: 'bg-green-100 text-green-800'
-    })
-  }
-  if (attrs.background_checked) {
-    badges.push({
-      label: 'Background Checked',
-      icon: CheckCircle,
-      colorClass: 'bg-orange-100 text-orange-800'
-    })
-  }
-  if (attrs.certified_partner) {
-    badges.push({
-      label: 'Certified Partner',
-      icon: Award,
-      colorClass: 'bg-purple-100 text-purple-800'
-    })
-  }
-  if (attrs.service_guarantee) {
-    badges.push({
-      label: 'Service Guarantee',
-      icon: Shield,
-      colorClass: 'bg-teal-100 text-teal-800'
-    })
-  }
+  const todayHours = company.value.attributes.working_hours[currentDay as keyof typeof company.value.attributes.working_hours]
 
-  return badges
+  if (!todayHours || todayHours.toLowerCase() === 'closed') return false
+
+  try {
+    const [start, end] = todayHours.split(' - ')
+    const [startHour, startMin] = start.match(/(\d+):(\d+)/)?.slice(1).map(Number) || [0, 0]
+    const [endHour, endMin] = end.match(/(\d+):(\d+)/)?.slice(1).map(Number) || [0, 0]
+
+    const startTime = (start.includes('PM') && startHour !== 12 ? startHour + 12 : startHour) * 60 + startMin
+    const endTime = (end.includes('PM') && endHour !== 12 ? endHour + 12 : endHour) * 60 + endMin
+
+    return currentTime >= startTime && currentTime <= endTime
+  } catch {
+    return false
+  }
 })
 
 /**
@@ -169,7 +130,7 @@ const starRating = computed(() => {
 })
 
 /**
- * Format working hours for display with today highlight
+ * Format working hours for display
  */
 const formattedWorkingHours = computed<IFormattedSchedule[]>(() => {
   if (!company.value?.attributes.working_hours) return []
@@ -191,6 +152,23 @@ const formattedWorkingHours = computed<IFormattedSchedule[]>(() => {
   })
 })
 
+/**
+ * Certifications list
+ */
+const certifications = computed(() => {
+  if (!company.value) return []
+
+  const attrs = company.value.attributes
+  return [
+    { label: 'Verified Professional', active: attrs.verified_professional, icon: CheckCircle },
+    { label: 'Licensed', active: attrs.licensed, icon: Shield },
+    { label: 'Fully Insured', active: attrs.insured, icon: Shield },
+    { label: 'Background Checked', active: attrs.background_checked, icon: CheckCircle },
+    { label: 'Certified Partner', active: attrs.certified_partner, icon: Award },
+    { label: 'Service Guarantee', active: attrs.service_guarantee, icon: Shield }
+  ].filter(cert => cert.active)
+})
+
 // Fetch data on mount
 onMounted(() => {
   fetchCompanyDetail()
@@ -198,7 +176,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="min-h-screen">
     <!-- Loading State -->
     <div v-if="loading" class="py-20">
       <div class="text-center space-y-4">
@@ -222,393 +200,293 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Company Detail Content - Two Column Layout -->
-    <div v-else-if="company" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Left Column - Main Content -->
-      <div class="lg:col-span-2 space-y-6">
-        <!-- Header Section -->
-        <BaseCard class="p-6">
-          <div class="mb-4">
-            <h1 class="text-3xl font-bold mb-2">{{ company.attributes.name }}</h1>
+    <!-- Company Detail Content -->
+    <div v-else-if="company" class="space-y-6">
+      <!-- Hero Header Section -->
+      <BaseCard class="overflow-hidden">
+        <div class="relative bg-gradient-to-br from-accent/10 via-accent/5 to-transparent p-8">
+          <!-- Decorative Background -->
+          <div class="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full -translate-y-32 translate-x-32 blur-3xl"></div>
 
-            <!-- Rating -->
-            <div class="flex items-center gap-3 mb-3">
-              <div class="flex items-center">
-                <div class="flex text-yellow-400">
-                  <Star
-                    v-for="(star, index) in starRating"
-                    :key="index"
-                    class="w-5 h-5"
-                    :class="star.filled ? 'fill-yellow-400' : 'fill-muted text-muted'"
-                  />
+          <div class="relative">
+            <!-- Company Name & Status -->
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-3">
+                  <h1 class="text-4xl font-bold">{{ company.attributes.name }}</h1>
+                  <span
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold"
+                    :class="serviceLevelConfig.color"
+                  >
+                    <component :is="serviceLevelConfig.icon" class="w-3 h-3 mr-1" />
+                    {{ company.attributes.service_level }}
+                  </span>
                 </div>
-                <span class="ml-2 font-semibold">{{ formattedRating }}</span>
+
+                <!-- Rating & Reviews -->
+                <div class="flex items-center gap-4 mb-3">
+                  <div class="flex items-center gap-2">
+                    <div class="flex text-yellow-400">
+                      <Star
+                        v-for="(star, index) in starRating"
+                        :key="index"
+                        class="w-5 h-5"
+                        :class="star.filled ? 'fill-yellow-400' : 'fill-gray-300 text-gray-300'"
+                      />
+                    </div>
+                    <span class="font-bold text-lg">{{ formattedRating }}</span>
+                  </div>
+                  <span class="text-muted-foreground">
+                    {{ company.attributes.total_reviews }} {{ company.attributes.total_reviews === 1 ? 'review' : 'reviews' }}
+                  </span>
+                </div>
+
+                <!-- Location & Specialty -->
+                <div class="space-y-2">
+                  <div class="flex items-start gap-2 text-muted-foreground">
+                    <MapPin class="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span class="text-sm">{{ company.attributes.full_address }}</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-muted-foreground">
+                    <Briefcase class="w-4 h-4 flex-shrink-0" />
+                    <span class="text-sm font-medium">{{ company.attributes.specialty }}</span>
+                  </div>
+                </div>
               </div>
-              <span class="text-sm text-muted-foreground">
-                ({{ company.attributes.total_reviews }} {{ company.attributes.total_reviews === 1 ? 'review' : 'reviews' }})
+
+              <!-- Status Badge -->
+              <div class="flex-shrink-0">
+                <div
+                  class="inline-flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg"
+                  :class="isCurrentlyOpen ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'"
+                >
+                  <div class="relative">
+                    <div
+                      class="w-2 h-2 rounded-full"
+                      :class="isCurrentlyOpen ? 'bg-white animate-pulse' : 'bg-white/70'"
+                    ></div>
+                  </div>
+                  <span class="font-bold text-sm">{{ isCurrentlyOpen ? 'OPEN NOW' : 'CLOSED' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Certifications Badges -->
+            <div class="flex flex-wrap gap-2">
+              <span
+                v-for="cert in certifications"
+                :key="cert.label"
+                class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-white/80 backdrop-blur shadow-sm border border-gray-200"
+              >
+                <component :is="cert.icon" class="w-3.5 h-3.5 mr-1.5 text-green-600" />
+                {{ cert.label }}
               </span>
             </div>
-
-            <!-- Address -->
-            <div class="flex items-center text-muted-foreground mb-2">
-              <MapPin class="w-4 h-4 mr-2" />
-              <span>{{ company.attributes.full_address }}</span>
-            </div>
           </div>
+        </div>
+      </BaseCard>
 
-          <!-- Trust Badges -->
-          <div class="flex flex-wrap gap-2 mb-4">
-            <span
-              v-for="badge in trustBadges"
-              :key="badge.label"
-              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-              :class="badge.colorClass"
-            >
-              <component :is="badge.icon" class="w-3 h-3 mr-1" />
-              {{ badge.label }}
-            </span>
-            <span
-              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-              :class="serviceLevelColorClass"
-            >
-              <Award class="w-3 h-3 mr-1" />
-              {{ company.attributes.service_level }} Service
-            </span>
-          </div>
-
-          <!-- Specialty -->
-          <div class="border-t pt-4">
-            <p class="text-sm text-muted-foreground">
-              <span class="font-semibold">Specialty:</span>
-              <span>{{ company.attributes.specialty }}</span>
-            </p>
-          </div>
-        </BaseCard>
-
-        <!-- About Section -->
-        <div class="space-y-6">
-          <!-- Company Description -->
+      <!-- Main Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column - Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- About Section -->
           <BaseCard class="p-6">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-2.5 shadow-lg">
-                <MessageSquare class="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 class="text-2xl font-bold">About Us</h2>
-                <p class="text-sm text-muted-foreground">Get to know our company</p>
-              </div>
-            </div>
-
-            <div class="prose max-w-none">
-              <p class="text-muted-foreground leading-relaxed text-base">
-                {{ company.attributes.description }}
-              </p>
-            </div>
-
-            <!-- Company Highlights -->
-            <div class="mt-6 pt-6 border-t">
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl">
-                  <div class="text-2xl font-bold text-blue-600 mb-1">{{ company.attributes.service_level }}</div>
-                  <div class="text-xs text-muted-foreground">Service Level</div>
-                </div>
-                <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl">
-                  <div class="text-2xl font-bold text-purple-600 mb-1">{{ company.attributes.total_reviews }}</div>
-                  <div class="text-xs text-muted-foreground">Customer Reviews</div>
-                </div>
-                <div class="text-center p-4 bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl">
-                  <div class="text-2xl font-bold text-green-600 mb-1">{{ formattedRating }}★</div>
-                  <div class="text-xs text-muted-foreground">Average Rating</div>
-                </div>
-              </div>
-            </div>
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+              <MessageSquare class="w-6 h-6 text-accent" />
+              About
+            </h2>
+            <p class="text-muted-foreground leading-relaxed">
+              {{ company.attributes.description }}
+            </p>
           </BaseCard>
 
-          <!-- Our Services Section -->
+          <!-- Services Section -->
           <BaseCard v-if="company.attributes.service_categories.length > 0" class="p-6">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-2.5 shadow-lg">
-                <Award class="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 class="text-2xl font-bold">Our Services</h2>
-                <p class="text-sm text-muted-foreground">Professional solutions we offer</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Award class="w-6 h-6 text-accent" />
+              Our Services
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div
                 v-for="category in company.attributes.service_categories"
                 :key="category.id"
-                class="group relative overflow-hidden border-2 border-gray-200 rounded-xl p-5 hover:border-accent hover:shadow-lg transition-all duration-300 cursor-pointer"
+                class="group p-4 border-2 border-gray-200 rounded-xl hover:border-accent hover:shadow-md transition-all duration-200"
               >
-                <!-- Hover gradient overlay -->
-                <div class="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-                <div class="relative flex items-start gap-4">
-                  <div class="bg-gradient-to-br from-accent to-accent/80 rounded-lg p-3 shadow-md group-hover:scale-110 transition-transform">
-                    <Award class="w-5 h-5 text-white" />
+                <div class="flex items-start gap-3">
+                  <div class="bg-accent/10 rounded-lg p-2 group-hover:bg-accent group-hover:shadow-lg transition-all">
+                    <Award class="w-5 h-5 text-accent group-hover:text-white transition-colors" />
                   </div>
-                  <div class="flex-1">
-                    <h3 class="font-bold text-lg mb-2 group-hover:text-accent transition-colors">
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-bold mb-1 group-hover:text-accent transition-colors">
                       {{ category.name }}
                     </h3>
-                    <p class="text-sm text-muted-foreground leading-relaxed">
+                    <p class="text-sm text-muted-foreground leading-snug">
                       {{ category.description }}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-
-            <!-- Service CTA -->
-            <div class="mt-6 p-4 bg-gradient-to-r from-accent/10 to-accent/5 border border-accent/20 rounded-xl">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="bg-accent rounded-lg p-2">
-                    <Phone class="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p class="font-semibold text-sm">Need a service?</p>
-                    <p class="text-xs text-muted-foreground">Contact us for a free consultation</p>
-                  </div>
-                </div>
-                <a
-                  :href="`tel:${company.attributes.phone}`"
-                  class="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-sm font-medium"
-                >
-                  Call Now
-                </a>
-              </div>
-            </div>
           </BaseCard>
 
-          <!-- Business Hours Section -->
+          <!-- Business Hours -->
           <BaseCard class="p-6">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-2.5 shadow-lg">
-                <Clock class="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 class="text-2xl font-bold">Business Hours</h2>
-                <p class="text-sm text-muted-foreground">When you can reach us</p>
-              </div>
-            </div>
-
-            <div class="space-y-2">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Clock class="w-6 h-6 text-accent" />
+              Business Hours
+            </h2>
+            <div class="space-y-1">
               <div
                 v-for="schedule in formattedWorkingHours"
                 :key="schedule.day"
-                class="group flex justify-between items-center py-3 px-4 rounded-lg transition-all"
-                :class="schedule.isToday ? 'bg-accent/10 border-2 border-accent/30 shadow-sm' : 'border border-transparent hover:bg-gray-50'"
+                class="flex justify-between items-center py-3 px-4 rounded-lg transition-colors"
+                :class="schedule.isToday ? 'bg-accent/10 font-semibold' : 'hover:bg-gray-50'"
               >
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-2 h-2 rounded-full"
-                    :class="schedule.isToday ? 'bg-accent animate-pulse' : 'bg-gray-300'"
-                  ></div>
-                  <span
-                    class="font-semibold"
-                    :class="schedule.isToday ? 'text-accent' : 'text-gray-900'"
-                  >
-                    {{ schedule.day }}
-                    <span v-if="schedule.isToday" class="ml-2 text-xs px-2 py-0.5 bg-accent text-white rounded-full">
-                      Today
-                    </span>
+                <span :class="schedule.isToday ? 'text-accent' : 'text-gray-900'">
+                  {{ schedule.day }}
+                  <span v-if="schedule.isToday" class="ml-2 text-xs px-2 py-0.5 bg-accent text-white rounded-full">
+                    Today
                   </span>
-                </div>
+                </span>
                 <span
                   class="font-medium"
-                  :class="schedule.isClosed ? 'text-red-600 font-semibold' : 'text-muted-foreground'"
+                  :class="schedule.isClosed ? 'text-red-600' : 'text-muted-foreground'"
                 >
                   {{ schedule.hours }}
                 </span>
               </div>
             </div>
+          </BaseCard>
 
-            <!-- Operating Status Badge -->
-            <div class="mt-6 pt-6 border-t">
-              <div class="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                <div class="flex items-center gap-3">
-                  <div class="relative">
-                    <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <div class="absolute inset-0 w-3 h-3 bg-green-500 rounded-full animate-ping opacity-75"></div>
+          <!-- Reviews Section -->
+          <BaseCard class="p-6">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Star class="w-6 h-6 text-accent" />
+              Customer Reviews
+            </h2>
+
+            <!-- No Reviews -->
+            <div v-if="company.attributes.reviews.length === 0" class="text-center py-12">
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MessageSquare class="w-8 h-8 text-gray-400" />
+              </div>
+              <p class="text-lg font-medium text-gray-900 mb-1">No reviews yet</p>
+              <p class="text-sm text-muted-foreground">Be the first to share your experience</p>
+            </div>
+
+            <!-- Reviews List -->
+            <div v-else class="space-y-4">
+              <div
+                v-for="review in company.attributes.reviews"
+                :key="review.id"
+                class="p-4 border rounded-lg hover:shadow-sm transition-shadow"
+              >
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="flex">
+                    <Star
+                      v-for="i in 5"
+                      :key="i"
+                      class="w-4 h-4"
+                      :class="i <= review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 fill-gray-300'"
+                    />
                   </div>
-                  <div>
-                    <p class="font-semibold text-green-900 text-sm">Available for Service</p>
-                    <p class="text-xs text-green-700">Contact us anytime for urgent needs</p>
-                  </div>
+                  <span class="font-semibold text-sm">{{ review.author }}</span>
+                  <span class="text-xs text-muted-foreground">
+                    · {{ new Date(review.created_at).toLocaleDateString() }}
+                  </span>
                 </div>
-                <Shield class="w-6 h-6 text-green-600" />
+                <p class="text-sm text-muted-foreground">{{ review.comment }}</p>
               </div>
             </div>
           </BaseCard>
         </div>
 
-        <!-- Reviews Section -->
-        <BaseCard class="p-6">
-          <h2 class="text-2xl font-bold mb-4">Customer Reviews</h2>
+        <!-- Right Column - Contact Sidebar -->
+        <div class="lg:col-span-1">
+          <div class="sticky top-4 space-y-4">
+            <!-- Quick Contact -->
+            <BaseCard class="p-6">
+              <h3 class="font-bold text-lg mb-4">Contact Us</h3>
 
-          <!-- No Reviews -->
-          <div v-if="company.attributes.reviews.length === 0" class="text-center py-12">
-            <MessageSquare class="w-12 h-12 text-muted mx-auto mb-4" />
-            <p class="text-muted-foreground text-lg mb-2">No reviews yet</p>
-            <p class="text-muted-foreground text-sm">Be the first to review this business</p>
-          </div>
-
-          <!-- Reviews List -->
-          <div v-else class="space-y-4">
-            <div
-              v-for="review in company.attributes.reviews"
-              :key="review.id"
-              class="p-5 border rounded-lg"
-            >
-              <div class="flex items-center gap-2 mb-2">
-                <div class="flex gap-1">
-                  <Star
-                    v-for="i in 5"
-                    :key="i"
-                    class="w-4 h-4"
-                    :class="i <= review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted fill-muted'"
-                  />
+              <!-- Phone -->
+              <a
+                :href="`tel:${company.attributes.phone}`"
+                class="flex items-center gap-3 p-4 mb-3 bg-gradient-to-r from-accent to-accent/90 text-white rounded-xl hover:shadow-lg transition-all group"
+              >
+                <div class="bg-white/20 rounded-lg p-2.5 group-hover:bg-white/30 transition-colors">
+                  <Phone class="w-5 h-5" />
                 </div>
-                <span class="font-semibold">{{ review.author }}</span>
-              </div>
-              <p class="text-muted-foreground">{{ review.comment }}</p>
-              <p class="text-xs text-muted-foreground mt-2">
-                {{ new Date(review.created_at).toLocaleDateString() }}
-              </p>
-            </div>
-          </div>
-        </BaseCard>
-      </div>
+                <div class="flex-1">
+                  <p class="text-xs opacity-90 mb-0.5">Call Now</p>
+                  <p class="font-bold">{{ company.attributes.phone }}</p>
+                </div>
+              </a>
 
-      <!-- Right Column - Contact Sidebar -->
-      <div class="lg:col-span-1">
-        <BaseCard class="p-6 sticky top-4 space-y-4">
-          <h3 class="text-xl font-bold mb-4">Contact Information</h3>
+              <!-- Email -->
+              <a
+                :href="`mailto:${company.attributes.email}`"
+                class="flex items-center gap-3 p-4 mb-3 border-2 border-gray-200 rounded-xl hover:border-accent hover:bg-accent/5 transition-all group"
+              >
+                <div class="bg-gray-100 rounded-lg p-2.5 group-hover:bg-accent/10 transition-colors">
+                  <Mail class="w-5 h-5 text-gray-600 group-hover:text-accent transition-colors" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-muted-foreground mb-0.5">Email</p>
+                  <p class="font-semibold text-sm truncate">{{ company.attributes.email }}</p>
+                </div>
+              </a>
 
-          <!-- Phone -->
-          <a
-            :href="`tel:${company.attributes.phone}`"
-            class="flex items-center p-4 bg-accent/10 rounded-lg hover:bg-accent/20 transition-colors"
-          >
-            <div class="bg-accent rounded-lg p-3 mr-4">
-              <Phone class="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p class="text-xs text-muted-foreground mb-1">Call Us</p>
-              <p class="font-semibold text-accent">{{ company.attributes.phone }}</p>
-            </div>
-          </a>
+              <!-- Website -->
+              <a
+                v-if="company.attributes.website"
+                :href="company.attributes.website"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-xl hover:border-accent hover:bg-accent/5 transition-all group"
+              >
+                <div class="bg-gray-100 rounded-lg p-2.5 group-hover:bg-accent/10 transition-colors">
+                  <Globe class="w-5 h-5 text-gray-600 group-hover:text-accent transition-colors" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-muted-foreground mb-0.5">Website</p>
+                  <p class="font-semibold text-sm truncate">{{ getWebsiteDomain(company.attributes.website) }}</p>
+                </div>
+              </a>
 
-          <!-- Email -->
-          <a
-            :href="`mailto:${company.attributes.email}`"
-            class="flex items-center p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
-          >
-            <div class="bg-foreground rounded-lg p-3 mr-4">
-              <Mail class="w-5 h-5 text-background" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-xs text-muted-foreground mb-1">Email Us</p>
-              <p class="font-semibold text-sm break-all">{{ company.attributes.email }}</p>
-            </div>
-          </a>
+              <!-- CTA Button -->
+              <BaseButton class="w-full mt-4" variant="default" size="lg">
+                Request Service
+              </BaseButton>
+            </BaseCard>
 
-          <!-- Website -->
-          <a
-            v-if="company.attributes.website"
-            :href="company.attributes.website"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-          >
-            <div class="bg-green-600 rounded-lg p-3 mr-4">
-              <Globe class="w-5 h-5 text-white" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-xs text-muted-foreground mb-1">Visit Website</p>
-              <p class="font-semibold text-green-600 text-sm truncate">{{ getWebsiteDomain(company.attributes.website) }}</p>
-            </div>
-            <Award class="w-4 h-4 text-green-600 flex-shrink-0" />
-          </a>
-
-          <!-- CTA Button -->
-          <BaseButton class="w-full" variant="default">
-            <Clock class="w-5 h-5 mr-2" />
-            Request Service
-          </BaseButton>
-
-          <!-- Service Guarantee -->
-          <div v-if="company.attributes.service_guarantee" class="border-t pt-4 mt-4">
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div class="flex items-start">
-                <Shield class="w-5 h-5 text-green-600 mr-3 mt-1 flex-shrink-0" />
-                <div>
-                  <h4 class="font-semibold mb-1">Service Guarantee</h4>
-                  <p class="text-sm text-muted-foreground">
-                    All work backed by our satisfaction guarantee. Call us for emergency repairs any time.
+            <!-- Service Guarantee -->
+            <BaseCard v-if="company.attributes.service_guarantee" class="p-5 bg-green-50 border-2 border-green-200">
+              <div class="flex items-start gap-3">
+                <div class="bg-green-500 rounded-lg p-2">
+                  <Shield class="w-5 h-5 text-white" />
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-bold text-green-900 mb-1">Service Guarantee</h4>
+                  <p class="text-sm text-green-800 leading-snug">
+                    Quality work backed by our satisfaction guarantee
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
+            </BaseCard>
 
-          <!-- Professional Certifications -->
-          <div class="border-t pt-4 mt-4">
-            <h4 class="font-semibold mb-3">Professional Certifications</h4>
-            <div class="space-y-2 text-sm">
-              <div class="flex items-center">
-                <CheckCircle
-                  :class="company.attributes.verified_professional ? 'text-green-500' : 'text-muted'"
-                  class="w-4 h-4 mr-2 flex-shrink-0"
-                />
-                <span :class="company.attributes.verified_professional ? '' : 'text-muted-foreground'">
-                  Verified Professional
-                </span>
+            <!-- Location Map Placeholder -->
+            <BaseCard class="p-5">
+              <h4 class="font-bold mb-3">Location</h4>
+              <div class="bg-gray-100 rounded-lg h-48 flex items-center justify-center">
+                <div class="text-center">
+                  <MapPin class="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                  <p class="text-sm text-muted-foreground">Map integration coming soon</p>
+                </div>
               </div>
-              <div class="flex items-center">
-                <CheckCircle
-                  :class="company.attributes.insured ? 'text-green-500' : 'text-muted'"
-                  class="w-4 h-4 mr-2 flex-shrink-0"
-                />
-                <span :class="company.attributes.insured ? '' : 'text-muted-foreground'">
-                  Fully Insured
-                </span>
-              </div>
-              <div class="flex items-center">
-                <CheckCircle
-                  :class="company.attributes.background_checked ? 'text-green-500' : 'text-muted'"
-                  class="w-4 h-4 mr-2 flex-shrink-0"
-                />
-                <span :class="company.attributes.background_checked ? '' : 'text-muted-foreground'">
-                  Background Checked
-                </span>
-              </div>
-              <div class="flex items-center">
-                <CheckCircle
-                  :class="company.attributes.licensed ? 'text-green-500' : 'text-muted'"
-                  class="w-4 h-4 mr-2 flex-shrink-0"
-                />
-                <span :class="company.attributes.licensed ? '' : 'text-muted-foreground'">
-                  {{ company.attributes.licensed ? 'Licensed' : 'Not Licensed' }}
-                </span>
-              </div>
-            </div>
+            </BaseCard>
           </div>
-
-          <!-- Location Map Placeholder -->
-          <div class="border-t pt-4 mt-4">
-            <h4 class="font-semibold mb-3">Location</h4>
-            <div class="bg-muted rounded-lg h-48 flex items-center justify-center">
-              <div class="text-center">
-                <MapPin class="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                <p class="text-muted-foreground text-sm">Map integration coming soon</p>
-              </div>
-            </div>
-          </div>
-        </BaseCard>
+        </div>
       </div>
     </div>
   </div>
