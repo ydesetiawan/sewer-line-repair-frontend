@@ -9,8 +9,7 @@ import {
   Award,
   CheckCircle,
   ShieldCheck,
-  BadgeCheck,
-  ChevronRight
+  BadgeCheck
 } from 'lucide-vue-next'
 import type {ICompany, ServiceLevel} from "@/types/company";
 
@@ -134,47 +133,53 @@ const truncatedDescription = computed(() => {
         </p>
       </div>
 
-      <!-- Contact Information Section -->
-      <div class="flex flex-wrap space-x-4 pt-4 border-t border-gray-100">
-
-        <!-- Phone -->
-        <div class="flex items-center gap-2 text-sm">
-          <Phone class="w-4 h-4 text-gray-400" aria-hidden="true" />
+      <!-- Contact Information Section - Compact & Modern -->
+      <footer class="pt-3 mt-3 border-t border-gray-100">
+        <div class="flex flex-wrap gap-2">
+          <!-- Phone - Primary Action -->
           <a
             :href="`tel:${company.attributes.phone}`"
-            class="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+            class="group/contact inline-flex items-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-500 border border-blue-200 hover:border-blue-500 rounded-lg transition-all duration-200 hover:shadow-sm"
             @click.stop
+            :aria-label="`Call ${company.attributes.name}`"
           >
-            {{ company.attributes.phone }}
+            <Phone class="w-3.5 h-3.5 text-blue-600 group-hover/contact:text-white transition-colors" aria-hidden="true" />
+            <span class="text-xs font-medium text-blue-700 group-hover/contact:text-white transition-colors">
+              {{ company.attributes.phone }}
+            </span>
           </a>
-        </div>
 
-        <!-- Email -->
-        <div v-if="company.attributes.email" class="flex items-center gap-2 text-sm">
-          <Mail class="w-4 h-4 text-gray-400" aria-hidden="true" />
+          <!-- Email - Secondary Action -->
           <a
+            v-if="company.attributes.email"
             :href="`mailto:${company.attributes.email}`"
-            class="text-blue-600 hover:text-blue-700 font-medium hover:underline truncate"
+            class="group/contact inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-blue-500 border border-gray-200 hover:border-blue-500 rounded-lg transition-all duration-200 hover:shadow-sm"
             @click.stop
+            :aria-label="`Email ${company.attributes.name}`"
           >
-            {{ company.attributes.email }}
+            <Mail class="w-3.5 h-3.5 text-gray-600 group-hover/contact:text-white transition-colors" aria-hidden="true" />
+            <span class="text-xs font-medium text-gray-700 group-hover/contact:text-white transition-colors truncate max-w-[150px]">
+              {{ company.attributes.email }}
+            </span>
           </a>
-        </div>
 
-        <!-- Website -->
-        <div v-if="company.attributes.website" class="flex items-center gap-2 text-sm">
-          <ExternalLink class="w-4 h-4 text-gray-400" aria-hidden="true" />
+          <!-- Website - Tertiary Action -->
           <a
+            v-if="company.attributes.website"
             :href="company.attributes.website"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-blue-600 hover:text-blue-700 font-medium hover:underline truncate"
+            class="group/contact inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-blue-500 border border-gray-200 hover:border-blue-500 rounded-lg transition-all duration-200 hover:shadow-sm"
             @click.stop
+            :aria-label="`Visit ${company.attributes.name} website`"
           >
-            Visit Website
+            <ExternalLink class="w-3.5 h-3.5 text-gray-600 group-hover/contact:text-white transition-colors" aria-hidden="true" />
+            <span class="text-xs font-medium text-gray-700 group-hover/contact:text-white transition-colors">
+              Visit Website
+            </span>
           </a>
         </div>
-      </div>
+      </footer>
     </NuxtLink>
   </article>
 </template>
