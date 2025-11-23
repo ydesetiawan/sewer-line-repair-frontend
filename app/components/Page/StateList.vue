@@ -141,7 +141,7 @@ onUnmounted(() => {
 
 <template>
   <!-- Header - Clean & Modern -->
-  <BaseCard class="overflow-hidden mb-6">
+  <BaseCard class="overflow-hidden mb-8">
     <div class="relative bg-gradient-to-br from-accent/10 via-accent/5 to-transparent p-8 md:p-12">
       <!-- Decorative Background -->
       <div
@@ -178,81 +178,66 @@ onUnmounted(() => {
     </div>
   </BaseCard>
 
-  <div class="space-y-6">
-    <!-- Search Input - Clean & Modern -->
+  <!-- Search Section - Clean & Modern -->
+  <BaseCard class="p-6 mb-8">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center">
+        <Search class="w-5 h-5 text-blue-600"/>
+      </div>
+      <h2 class="text-xl font-bold text-gray-900">Find Your State</h2>
+    </div>
+
     <div class="relative">
-      <div class="relative">
-        <BaseInput
-            :model-value="searchQuery"
-            type="text"
-            placeholder="Search states by name..."
-            class="pl-12 pr-12 h-14 text-base bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
-            aria-label="Search states"
-            @input="handleSearch"
-        />
-        <div class="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-          <div class="w-8 h-8 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center">
-            <Search class="w-4 h-4 text-blue-600"/>
-          </div>
+      <BaseInput
+          :model-value="searchQuery"
+          type="text"
+          placeholder="Search states by name..."
+          class="pl-12 pr-12 h-14 text-base bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+          aria-label="Search states"
+          @input="handleSearch"
+      />
+      <div class="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+        <div class="w-8 h-8 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center">
+          <Search class="w-4 h-4 text-blue-600"/>
         </div>
-        <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
-          <Loader2
-              v-if="loading"
-              class="w-5 h-5 text-blue-600 animate-spin"
-          />
-          <button
-              v-else-if="searchQuery"
-              type="button"
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-all duration-200"
-              aria-label="Clear search"
-              @click="handleClearSearch"
-          >
-            <X class="w-4 h-4"/>
-          </button>
-        </div>
+      </div>
+      <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+        <Loader2 v-if="loading" class="w-5 h-5 text-blue-600 animate-spin"/>
+        <button
+            v-if="searchQuery"
+            @click="handleClearSearch"
+            type="button"
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-all duration-200"
+            aria-label="Clear search"
+        >
+          <X class="w-4 h-4"/>
+        </button>
       </div>
     </div>
 
-    <!-- Search Results Info - Clean Design -->
-    <div v-if="searchQuery && !loading"
-         class="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+    <div v-if="searchQuery" class="flex items-center gap-3 mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
       <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow-sm">
         <Search class="w-5 h-5 text-white"/>
       </div>
-      <div class="flex-1">
-        <template v-if="hasResults">
-          <p class="text-sm font-medium text-gray-900">
-            Found <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold bg-blue-600 text-white shadow-sm">{{
-              totalResults
-            }}</span>
-            state{{ totalResults !== 1 ? 's' : '' }} matching "<span class="font-semibold text-blue-600">{{
-              searchQuery
-            }}</span>"
-          </p>
-        </template>
-        <template v-else>
-          <p class="text-sm font-medium text-gray-900">
-            No states found matching "<span class="font-semibold text-blue-600">{{ searchQuery }}</span>"
-          </p>
-          <p class="text-xs text-gray-600 mt-0.5">Try a different search term</p>
-        </template>
-      </div>
-    </div>
-
-    <!-- All States Count (when no search) - Clean Design -->
-    <div v-else-if="!searchQuery && !loading && hasResults"
-         class="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
-      <div class="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center shadow-sm">
-        <MapPin class="w-5 h-5 text-white"/>
-      </div>
       <p class="text-sm font-medium text-gray-900">
-        Showing <span
-          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold bg-gray-700 text-white shadow-sm">{{
-          totalResults
-        }}</span>
-        state{{ totalResults !== 1 ? 's' : '' }} available
+        Searching for "<span class="font-semibold text-blue-600">{{ searchQuery }}</span>"
       </p>
+    </div>
+  </BaseCard>
+
+  <BaseCard class="p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6">
+      <div>
+        <h2 class="text-2xl font-bold mb-1">
+          {{ searchQuery ? 'Search Results' : 'Available States' }}
+        </h2>
+        <p v-if="searchQuery && states.length > 0" class="text-sm text-muted-foreground">
+          Found <span class="font-semibold text-accent">{{ states.length }}</span> result{{ states.length !== 1 ? 's' : '' }} for "{{ searchQuery }}"
+        </p>
+        <p v-else class="text-sm text-muted-foreground">
+          Showing {{ states.length }} states <span v-if="isSelectedCountry">in {{ country }}</span>
+        </p>
+      </div>
     </div>
 
     <!-- Loading State - Clean Design -->
@@ -386,6 +371,6 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
-  </div>
+  </BaseCard>
 </template>
 
