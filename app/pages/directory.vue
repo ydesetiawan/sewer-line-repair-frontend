@@ -22,11 +22,7 @@ useSeoMeta({
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- State with Companies Component -->
-    <PageCompanyList
-        :state-slug="stateSlug"
-        :country-slug="countrySlug"
-        :state-name="state"
-    />
+    <PageDirectory/>
   </div>
 </template>
 
