@@ -11,7 +11,7 @@
       <NuxtLink to="/directory">
         <BaseButton
           size="lg"
-          class="bg-accent hover:bg-accent/90 text-accent-foreground text-lg px-8"
+          class="bg-accent hover:bg-accent/90 text-accent-foreground text-lg px-8 text-white"
         >
           Get Started Now
         </BaseButton>

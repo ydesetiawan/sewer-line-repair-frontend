@@ -9,7 +9,7 @@
       <div class="flex items-center justify-between h-16">
         <NuxtLink to="/" class="flex items-center gap-2">
           <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-            <span class="text-sm font-bold text-accent-foreground">SR</span>
+            <span class="text-sm font-bold text-accent-foreground text-white">SR</span>
           </div>
           <span class="font-bold text-lg hidden sm:inline">SewerRepair Pro</span>
         </NuxtLink>
@@ -31,7 +31,7 @@
             <BaseButton
               variant="default"
               size="sm"
-              class="bg-accent hover:bg-accent/90 text-accent-foreground"
+              class="bg-accent hover:bg-accent/90 text-accent-foreground text-white"
             >
               Find Contractors
             </BaseButton>

@@ -25,7 +25,7 @@
 
           <div class="flex gap-4 pt-4">
             <NuxtLink to="/directory">
-              <BaseButton size="lg" class="bg-accent hover:bg-accent/90 text-accent-foreground">
+              <BaseButton size="lg" class="bg-accent hover:bg-accent/90 text-accent-foreground text-white">
                 Browse Directory
               </BaseButton>
             </NuxtLink>
