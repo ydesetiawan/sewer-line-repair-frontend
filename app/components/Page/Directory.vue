@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MapPin, Loader2, AlertCircle, RefreshCw, ChevronDown, Search, X, CheckCircle, Star, Phone, ShieldCheck } from 'lucide-vue-next'
+import { MapPin, Loader2, AlertCircle, RefreshCw, ChevronDown, Search, X, CheckCircle, Star, Phone, ShieldCheck, Filter, SlidersHorizontal } from 'lucide-vue-next'
 import type { ICompany } from '@/types/company'
 import type { ICity } from '@/types/city'
 
@@ -13,6 +13,18 @@ const error = ref<Error | null>(null)
 const currentPage = ref(1)
 const searchQuery = ref('')
 const isSearching = ref(false)
+
+// Filter state
+const showFilters = ref(false)
+const filters = ref({
+  city: '',
+  state: '',
+  country: '',
+  service_category: '',
+  verified_only: false,
+  min_rating: '',
+  sort: 'name'
+})
 
 const { $publicApi } = useNuxtApp()
 
@@ -30,15 +42,30 @@ const fetchData = async (page = 1, append = false) => {
   error.value = null
 
   try {
+    // Build params object with all filters
+    const params: Record<string, any> = {
+      page: page,
+      per_page: 20,
+      company_name: searchQuery.value || null,
+      city: filters.value.city || null,
+      state: filters.value.state || null,
+      country: filters.value.country || null,
+      service_category: filters.value.service_category || null,
+      verified_only: filters.value.verified_only ? 'true' : null,
+      min_rating: filters.value.min_rating || null,
+      sort: filters.value.sort || 'name'
+    }
+
+    // Remove null values
+    Object.keys(params).forEach(key => {
+      if (params[key] === null) {
+        delete params[key]
+      }
+    })
+
     const response = await ($publicApi as any)(
         `/api/v1/companies/search`,
-        {
-          params: {
-            page: page,
-            per_page: 20,
-            company_name: searchQuery.value || null,
-          },
-        }
+        { params }
     ) as ISlrApiResponse<ICompany[]> & {
       meta?: {
         cities?: {
@@ -109,6 +136,62 @@ const loadMore = async () => {
   if (!hasMorePages.value || loadingMore.value) return
   await fetchData(currentPage.value + 1, true)
 }
+
+/**
+ * Apply filters and refresh results
+ */
+const applyFilters = () => {
+  currentPage.value = 1
+  showFilters.value = false
+  fetchData(1, false)
+}
+
+/**
+ * Clear all filters
+ */
+const clearFilters = () => {
+  filters.value = {
+    city: '',
+    state: '',
+    country: '',
+    service_category: '',
+    verified_only: false,
+    min_rating: '',
+    sort: 'name'
+  }
+  currentPage.value = 1
+  fetchData(1, false)
+}
+
+/**
+ * Clear all filters and search
+ */
+const clearAll = () => {
+  searchQuery.value = ''
+  clearFilters()
+}
+
+/**
+ * Toggle filter panel
+ */
+const toggleFilters = () => {
+  showFilters.value = !showFilters.value
+}
+
+/**
+ * Count active filters
+ */
+const activeFiltersCount = computed(() => {
+  let count = 0
+  if (filters.value.city) count++
+  if (filters.value.state) count++
+  if (filters.value.country) count++
+  if (filters.value.service_category) count++
+  if (filters.value.verified_only) count++
+  if (filters.value.min_rating) count++
+  if (filters.value.sort !== 'name') count++
+  return count
+})
 
 /**
  * Total companies count from pagination
@@ -261,50 +344,330 @@ onMounted(() => {
         </div>
       </BaseCard>
 
-      <!-- Search Section - Clean & Modern -->
+      <!-- Search & Filters Combined Section -->
       <BaseCard class="p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center">
-            <Search class="w-5 h-5 text-blue-600" />
-          </div>
-          <h2 class="text-xl font-bold text-gray-900">Find Your Perfect Contractor</h2>
-        </div>
+        <!-- Header with Search -->
+        <div class="space-y-6">
+          <!-- Title Section -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
+                <Search class="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-900">Search & Filter Contractors</h2>
+                <p class="text-xs text-muted-foreground">Find the perfect professional for your needs</p>
+              </div>
+            </div>
 
-        <div class="relative">
-          <input
-              id="company-search"
-              v-model="searchQuery"
-              @input="handleSearch"
-              type="text"
-              placeholder="Search by contractor name (e.g., 'ABC Plumbing', 'Elite Sewer')..."
-              class="w-full pl-12 pr-12 h-14 text-base bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 outline-none"
-          />
-          <div class="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-            <div class="w-8 h-8 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center">
-              <Search class="w-4 h-4 text-blue-600" />
+            <!-- Active Filters Badge -->
+            <div v-if="activeFiltersCount > 0" class="flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium">
+              <Filter class="w-4 h-4" />
+              {{ activeFiltersCount }} active
             </div>
           </div>
-          <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-            <Loader2 v-if="isSearching" class="w-5 h-5 text-blue-600 animate-spin" />
-            <button
-                v-if="searchQuery"
-                @click="clearSearch"
-                type="button"
-                class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-all duration-200"
-                aria-label="Clear search"
+
+          <!-- Search Bar -->
+          <div class="relative">
+            <input
+                id="company-search"
+                v-model="searchQuery"
+                @input="handleSearch"
+                type="text"
+                placeholder="Search by contractor name (e.g., 'ABC Plumbing', 'Elite Sewer')..."
+                class="w-full pl-12 pr-12 h-12 text-sm bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 outline-none"
+            />
+            <div class="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <Search class="w-4 h-4 text-gray-400" />
+            </div>
+            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+              <Loader2 v-if="isSearching" class="w-4 h-4 text-blue-600 animate-spin" />
+              <button
+                  v-if="searchQuery"
+                  @click="clearSearch"
+                  type="button"
+                  class="w-6 h-6 flex items-center justify-center rounded-md bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-all duration-200"
+                  aria-label="Clear search"
+              >
+                <X class="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Search Query Display -->
+          <div v-if="searchQuery" class="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <Search class="w-4 h-4 text-blue-600" />
+            <p class="text-sm font-medium text-gray-900">
+              Searching for: <span class="font-semibold text-blue-600">{{ searchQuery }}</span>
+            </p>
+          </div>
+
+          <!-- Filters Toggle & Actions -->
+          <div class="flex items-center justify-between pt-2 border-t">
+            <BaseButton
+                @click="toggleFilters"
+                variant="ghost"
+                size="sm"
+                class="gap-2"
             >
-              <X class="w-4 h-4" />
-            </button>
+              <SlidersHorizontal class="w-4 h-4" />
+              {{ showFilters ? 'Hide' : 'Show' }} Advanced Filters
+            </BaseButton>
+
+            <div v-if="activeFiltersCount > 0 || searchQuery" class="flex items-center gap-2">
+              <BaseButton
+                  @click="clearAll"
+                  variant="ghost"
+                  size="sm"
+                  class="gap-2 text-muted-foreground hover:text-destructive"
+              >
+                <X class="w-4 h-4" />
+                Clear All
+              </BaseButton>
+            </div>
           </div>
         </div>
 
-        <div v-if="searchQuery" class="flex items-center gap-3 mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-          <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow-sm">
-            <Search class="w-5 h-5 text-white" />
+        <!-- Filter Panel (Collapsible) -->
+        <div
+            v-show="showFilters"
+            class="pt-6 mt-6 border-t space-y-6 animate-in fade-in duration-200"
+        >
+          <!-- Filters Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column: Location & Service -->
+            <div class="space-y-6">
+              <!-- Location Filters -->
+              <div class="space-y-3">
+                <h3 class="font-semibold text-sm flex items-center gap-2 text-gray-900">
+                  <div class="w-6 h-6 bg-blue-50 rounded-md flex items-center justify-center">
+                    <MapPin class="w-3.5 h-3.5 text-blue-600" />
+                  </div>
+                  Location
+                </h3>
+                <div class="space-y-3 pl-8">
+                  <!-- City -->
+                  <div>
+                    <label for="filter-city" class="block text-xs font-medium text-gray-700 mb-1.5">
+                      City
+                    </label>
+                    <input
+                        id="filter-city"
+                        v-model="filters.city"
+                        type="text"
+                        placeholder="e.g., Austin, Houston..."
+                        class="w-full px-3 py-2 text-sm bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg outline-none transition-all"
+                    />
+                  </div>
+
+                  <!-- State -->
+                  <div>
+                    <label for="filter-state" class="block text-xs font-medium text-gray-700 mb-1.5">
+                      State
+                    </label>
+                    <input
+                        id="filter-state"
+                        v-model="filters.state"
+                        type="text"
+                        placeholder="e.g., Texas, TX..."
+                        class="w-full px-3 py-2 text-sm bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg outline-none transition-all"
+                    />
+                  </div>
+
+                  <!-- Country -->
+                  <div>
+                    <label for="filter-country" class="block text-xs font-medium text-gray-700 mb-1.5">
+                      Country
+                    </label>
+                    <input
+                        id="filter-country"
+                        v-model="filters.country"
+                        type="text"
+                        placeholder="e.g., United States, US..."
+                        class="w-full px-3 py-2 text-sm bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Service Category -->
+              <div class="space-y-3">
+                <h3 class="font-semibold text-sm flex items-center gap-2 text-gray-900">
+                  <div class="w-6 h-6 bg-purple-50 rounded-md flex items-center justify-center">
+                    <Star class="w-3.5 h-3.5 text-purple-600" />
+                  </div>
+                  Service
+                </h3>
+                <div class="pl-8">
+                  <label for="filter-service" class="block text-xs font-medium text-gray-700 mb-1.5">
+                    Category
+                  </label>
+                  <select
+                      id="filter-service"
+                      v-model="filters.service_category"
+                      class="w-full px-3 py-2 text-sm bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg outline-none transition-all"
+                  >
+                    <option value="">All Services</option>
+                    <option value="sewer-line-repair">Sewer Line Repair</option>
+                    <option value="drain-cleaning">Drain Cleaning</option>
+                    <option value="pipe-replacement">Pipe Replacement</option>
+                    <option value="septic-services">Septic Services</option>
+                    <option value="emergency-services">Emergency Services</option>
+                    <option value="water-line-repair">Water Line Repair</option>
+                    <option value="camera-inspection">Camera Inspection</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Quality & Sort -->
+            <div class="space-y-6">
+              <!-- Quality Filters -->
+              <div class="space-y-3">
+                <h3 class="font-semibold text-sm flex items-center gap-2 text-gray-900">
+                  <div class="w-6 h-6 bg-amber-50 rounded-md flex items-center justify-center">
+                    <Star class="w-3.5 h-3.5 text-amber-600 fill-amber-600" />
+                  </div>
+                  Quality
+                </h3>
+                <div class="space-y-3 pl-8">
+                  <!-- Rating -->
+                  <div>
+                    <label for="filter-rating" class="block text-xs font-medium text-gray-700 mb-1.5">
+                      Minimum Rating
+                    </label>
+                    <select
+                        id="filter-rating"
+                        v-model="filters.min_rating"
+                        class="w-full px-3 py-2 text-sm bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg outline-none transition-all"
+                    >
+                      <option value="">Any Rating</option>
+                      <option value="4.5">4.5+ Stars</option>
+                      <option value="4.0">4.0+ Stars</option>
+                      <option value="3.5">3.5+ Stars</option>
+                      <option value="3.0">3.0+ Stars</option>
+                    </select>
+                  </div>
+
+                  <!-- Verified Only -->
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1.5">
+                      Verification
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input
+                          v-model="filters.verified_only"
+                          type="checkbox"
+                          class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <div class="flex items-center gap-2">
+                        <ShieldCheck class="w-4 h-4 text-emerald-600" />
+                        <span class="text-sm font-medium">Verified Only</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sorting -->
+              <div class="space-y-3">
+                <h3 class="font-semibold text-sm flex items-center gap-2 text-gray-900">
+                  <div class="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center">
+                    <SlidersHorizontal class="w-3.5 h-3.5 text-gray-600" />
+                  </div>
+                  Sort
+                </h3>
+                <div class="pl-8">
+                  <label for="filter-sort" class="block text-xs font-medium text-gray-700 mb-1.5">
+                    Order By
+                  </label>
+                  <select
+                      id="filter-sort"
+                      v-model="filters.sort"
+                      class="w-full px-3 py-2 text-sm bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg outline-none transition-all"
+                  >
+                    <option value="name">Name (A-Z)</option>
+                    <option value="-name">Name (Z-A)</option>
+                    <option value="-rating">Rating (High to Low)</option>
+                    <option value="rating">Rating (Low to High)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
-          <p class="text-sm font-medium text-gray-900">
-            Searching for "<span class="font-semibold text-blue-600">{{ searchQuery }}</span>"
-          </p>
+
+          <!-- Filter Actions -->
+          <div class="flex items-center justify-end gap-2 pt-4 border-t">
+            <BaseButton
+                @click="clearFilters"
+                variant="ghost"
+                size="sm"
+                class="gap-2"
+            >
+              <X class="w-4 h-4" />
+              Reset
+            </BaseButton>
+            <BaseButton
+                @click="applyFilters"
+                variant="default"
+                size="sm"
+                class="gap-2"
+            >
+              <Filter class="w-4 h-4" />
+              Apply Filters
+            </BaseButton>
+          </div>
+        </div>
+
+        <!-- Active Filters Display (when collapsed) -->
+        <div v-if="!showFilters && activeFiltersCount > 0" class="mt-4 flex flex-wrap gap-2">
+          <div v-if="filters.city" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-medium">
+            <MapPin class="w-3 h-3" />
+            City: {{ filters.city }}
+            <button @click="filters.city = ''; applyFilters()" class="ml-1 hover:text-blue-900">
+              <X class="w-3 h-3" />
+            </button>
+          </div>
+          <div v-if="filters.state" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-medium">
+            <MapPin class="w-3 h-3" />
+            State: {{ filters.state }}
+            <button @click="filters.state = ''; applyFilters()" class="ml-1 hover:text-blue-900">
+              <X class="w-3 h-3" />
+            </button>
+          </div>
+          <div v-if="filters.country" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-medium">
+            <MapPin class="w-3 h-3" />
+            Country: {{ filters.country }}
+            <button @click="filters.country = ''; applyFilters()" class="ml-1 hover:text-blue-900">
+              <X class="w-3 h-3" />
+            </button>
+          </div>
+          <div v-if="filters.service_category" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 border border-purple-200 text-purple-700 rounded-lg text-xs font-medium">
+            Service: {{ filters.service_category }}
+            <button @click="filters.service_category = ''; applyFilters()" class="ml-1 hover:text-purple-900">
+              <X class="w-3 h-3" />
+            </button>
+          </div>
+          <div v-if="filters.min_rating" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg text-xs font-medium">
+            <Star class="w-3 h-3 fill-amber-700" />
+            Min {{ filters.min_rating }}+
+            <button @click="filters.min_rating = ''; applyFilters()" class="ml-1 hover:text-amber-900">
+              <X class="w-3 h-3" />
+            </button>
+          </div>
+          <div v-if="filters.verified_only" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-xs font-medium">
+            <ShieldCheck class="w-3 h-3" />
+            Verified Only
+            <button @click="filters.verified_only = false; applyFilters()" class="ml-1 hover:text-emerald-900">
+              <X class="w-3 h-3" />
+            </button>
+          </div>
+          <div v-if="filters.sort !== 'name'" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 border border-gray-200 text-gray-700 rounded-lg text-xs font-medium">
+            Sort: {{ filters.sort }}
+            <button @click="filters.sort = 'name'; applyFilters()" class="ml-1 hover:text-gray-900">
+              <X class="w-3 h-3" />
+            </button>
+          </div>
         </div>
       </BaseCard>
 
