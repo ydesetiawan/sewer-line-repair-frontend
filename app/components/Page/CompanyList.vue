@@ -304,7 +304,7 @@ onMounted(() => {
       </div>
 
       <!-- No Contractors Message -->
-      <div v-if="!companies.length && !searchQuery && !loading" class="text-center py-20">
+      <div v-if="!companies.length && !searchQuery && !loading" class="text-center">
         <BaseCard class="p-12">
           <div class="max-w-md mx-auto space-y-4">
             <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
@@ -324,7 +324,7 @@ onMounted(() => {
       <div v-if="companies.length > 0 || searchQuery">
         <BaseCard class="p-6">
           <!-- Section Header -->
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 pb-6 border-b">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6">
             <div>
               <h2 class="text-2xl font-bold mb-1">
                 {{ searchQuery ? 'Search Results' : 'Available Contractors' }}
