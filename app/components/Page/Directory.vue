@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MapPin, Loader2, AlertCircle, RefreshCw, ChevronDown, Search, X, CheckCircle } from 'lucide-vue-next'
+import { MapPin, Loader2, AlertCircle, RefreshCw, ChevronDown, Search, X, CheckCircle, Star, Phone, ShieldCheck } from 'lucide-vue-next'
 import type { ICompany } from '@/types/company'
 import type { ICity } from '@/types/city'
 
@@ -173,15 +173,89 @@ onMounted(() => {
         <div class="relative bg-gradient-to-br from-accent/10 via-accent/5 to-transparent p-8 md:p-12">
           <!-- Decorative Background -->
           <div class="absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full -translate-y-32 translate-x-32 blur-3xl"></div>
+          <div class="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full translate-y-32 -translate-x-32 blur-3xl"></div>
 
           <div class="relative">
-            <div class="max-w-4xl">
-              <h1 class="text-4xl md:text-5xl font-bold mb-4">
-                Find Sewer Repair Contractors
+            <!-- Main Hero Content -->
+            <div class="max-w-4xl mb-4">
+              <div class="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 rounded-full mb-6">
+                <div class="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+                <span class="text-sm font-medium">{{ totalCompanies }} Verified Contractors</span>
+              </div>
+
+              <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+                Find Trusted Sewer Repair Contractors
               </h1>
-              <p class="text-xl text-muted-foreground mb-6">
-                Connect with trusted, verified professionals for all your sewer repair needs
+              <p class="text-xl text-muted-foreground mb-8 max-w-2xl">
+                Connect with verified, licensed professionals for all your sewer repair needs. Quality service guaranteed.
               </p>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+              <!-- Feature 1: Easy Search -->
+              <div class="group relative bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg p-3 hover:bg-background hover:border-accent/50 hover:shadow-md transition-all duration-300">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative flex items-start gap-2">
+                  <div class="w-8 h-8 bg-blue-50 border border-blue-100 rounded-md flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <Search class="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-xs mb-0.5 truncate">Easy Search</h3>
+                    <p class="text-[10px] leading-tight text-muted-foreground line-clamp-2">
+                      Find contractors by location
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Feature 2: Verified Reviews -->
+              <div class="group relative bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg p-3 hover:bg-background hover:border-accent/50 hover:shadow-md transition-all duration-300">
+                <div class="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative flex items-start gap-2">
+                  <div class="w-8 h-8 bg-amber-50 border border-amber-100 rounded-md flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <Star class="w-4 h-4 text-amber-600 fill-amber-600" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-xs mb-0.5 truncate">Verified Reviews</h3>
+                    <p class="text-[10px] leading-tight text-muted-foreground line-clamp-2">
+                      Real customer feedback
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Feature 3: Direct Contact -->
+              <div class="group relative bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg p-3 hover:bg-background hover:border-accent/50 hover:shadow-md transition-all duration-300">
+                <div class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative flex items-start gap-2">
+                  <div class="w-8 h-8 bg-green-50 border border-green-100 rounded-md flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <Phone class="w-4 h-4 text-green-600" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-xs mb-0.5 truncate">Direct Contact</h3>
+                    <p class="text-[10px] leading-tight text-muted-foreground line-clamp-2">
+                      Connect for quotes
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Feature 4: Licensed & Insured -->
+              <div class="group relative bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg p-3 hover:bg-background hover:border-accent/50 hover:shadow-md transition-all duration-300">
+                <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative flex items-start gap-2">
+                  <div class="w-8 h-8 bg-emerald-50 border border-emerald-100 rounded-md flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <ShieldCheck class="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-xs mb-0.5 truncate">Licensed & Insured</h3>
+                    <p class="text-[10px] leading-tight text-muted-foreground line-clamp-2">
+                      Verified contractors
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
