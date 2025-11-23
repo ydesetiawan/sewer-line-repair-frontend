@@ -266,10 +266,6 @@ onMounted(() => {
                     <MapPin class="w-4 h-4 mt-0.5 flex-shrink-0" />
                     <span class="text-sm">{{ company.attributes.full_address }}</span>
                   </div>
-<!--                  <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/50 rounded-full border border-gray-200">-->
-<!--                    <div class="w-1.5 h-1.5 bg-accent rounded-full"></div>-->
-<!--                    <span class="text-sm font-medium text-gray-700">{{ company.attributes.specialty }}</span>-->
-<!--                  </div>-->
                 </div>
               </div>
 
