@@ -12,13 +12,13 @@ useSeoMeta({
 
 <template>
   <div>
-    <PageHeroSection />
+    <PageHomeHeroSection />
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
-      <PageSearchLocation />
+      <PageHomeSearchLocation />
     </div>
-    <PageStateCategories />
-    <PageDirectoryFeatures />
-    <PageCTASection />
+    <PageHomeStateCategories />
+    <PageHomeDirectoryFeatures />
+    <PageHomeCTASection />
   </div>
 </template>
 

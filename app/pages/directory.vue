@@ -1,36 +1,32 @@
 <script setup lang="ts">
-import { CONTRACTORS } from '@/composables/useContractors'
+
 
 definePageMeta({
   layout: 'default',
 })
 
+const route = useRoute()
+const countrySlug = route.params.country as string || 'united-states'
+const stateSlug = route.params.state as string || 'texas'
+
+// Format names from slugs
+const state = formatSlugToTitle(stateSlug)
+
 useSeoMeta({
-  title: 'Sewer Repair Directory - Find Local Contractors',
-  description: 'Browse our complete directory of licensed sewer repair contractors nationwide.',
+  title: `Sewer Repair Contractors in Directory - Find Local Experts`,
+  description: `Find licensed and trusted plumbing and sewer repair companies with browse by directory.`,
 })
+
 </script>
 
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="mb-8">
-      <h1 class="text-4xl font-bold mb-4">Contractor Directory</h1>
-      <p class="text-xl text-muted-foreground">
-        Browse all available sewer repair contractors in your area
-      </p>
-    </div>
-
-    <div class="mb-8">
-      <PageSearchLocation />
-    </div>
-
-    <div class="grid gap-6">
-      <PageDirectoryCard
-        v-for="contractor in CONTRACTORS"
-        :key="contractor.id"
-        :contractor="contractor"
-      />
-    </div>
+    <!-- State with Companies Component -->
+    <PageCompanyList
+        :state-slug="stateSlug"
+        :country-slug="countrySlug"
+        :state-name="state"
+    />
   </div>
 </template>
 
